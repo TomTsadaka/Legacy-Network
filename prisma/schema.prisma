@@ -1,0 +1,249 @@
+// Legacy Network - Prisma Schema
+// Multi-tenant family memories platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER & AUTHENTICATION MODELS
+// ============================================
+
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  email         String          @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  families      FamilyMember[]  // User can belong to multiple families
+  entries       Entry[]         // Entries authored by this user
+  likes         Like[]
+  comments      Comment[]
+
+  @@map("users")
+}
+
+// NextAuth.js models
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============================================
+// FAMILY & MULTI-TENANT MODELS
+// ============================================
+
+model Family {
+  id        String   @id @default(cuid())
+  name      String   // e.g., "The Smith Family"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  members  FamilyMember[]
+  children Child[]
+  entries  Entry[]
+
+  @@map("families")
+}
+
+// Junction table: User <-> Family (Many-to-Many with role)
+model FamilyMember {
+  id       String @id @default(cuid())
+  userId   String
+  familyId String
+  role     FamilyRole @default(MEMBER)
+
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, familyId])
+  @@index([familyId])
+  @@map("family_members")
+}
+
+enum FamilyRole {
+  OWNER   // Created the family
+  PARTNER // Invited spouse/partner
+  MEMBER  // Other family member
+}
+
+// ============================================
+// CHILDREN MODEL
+// ============================================
+
+model Child {
+  id        String   @id @default(cuid())
+  name      String
+  birthDate DateTime
+  gender    Gender?
+  image     String?  // Profile photo URL
+  familyId  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  family        Family       @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  taggedEntries EntryChild[] // Entries where this child is tagged
+
+  @@index([familyId])
+  @@index([birthDate]) // For birthday queries
+  @@map("children")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+// ============================================
+// ENTRY (MEMORY) MODELS
+// ============================================
+
+model Entry {
+  id          String     @id @default(cuid())
+  title       String
+  content     String     @db.Text // Markdown content
+  eventDate   DateTime   // When the memory happened
+  location    String?
+  category    Category   @default(DAILY_LIFE)
+  visibility  Visibility @default(FAMILY_ONLY)
+
+  authorId String
+  familyId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  author         User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  family         Family       @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  taggedChildren EntryChild[] // Children tagged in this entry
+  likes          Like[]
+  comments       Comment[]
+
+  @@index([familyId])
+  @@index([authorId])
+  @@index([eventDate]) // For timeline queries
+  @@index([category])
+  @@map("entries")
+}
+
+// Many-to-Many: Entry <-> Child
+model EntryChild {
+  id      String @id @default(cuid())
+  entryId String
+  childId String
+
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  child Child @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, childId])
+  @@index([childId])
+  @@map("entry_children")
+}
+
+enum Category {
+  MILESTONE     // First steps, first words, etc.
+  DAILY_LIFE    // Regular activities
+  SPECIAL_EVENT // Birthdays, holidays
+  HEALTH        // Doctor visits, illnesses
+  EDUCATION     // School, learning
+  FAMILY        // Family gatherings
+  TRAVEL        // Trips, vacations
+  OTHER
+}
+
+enum Visibility {
+  PRIVATE      // Only author can see
+  FAMILY_ONLY  // All family members can see
+  PUBLIC       // Can be shared publicly (future feature)
+}
+
+// ============================================
+// ENGAGEMENT MODELS (Optional)
+// ============================================
+
+model Like {
+  id      String @id @default(cuid())
+  userId  String
+  entryId String
+
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, entryId])
+  @@index([entryId])
+  @@map("likes")
+}
+
+model Comment {
+  id      String @id @default(cuid())
+  content String @db.Text
+  userId  String
+  entryId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@index([entryId])
+  @@map("comments")
+}
