@@ -1,21 +1,15 @@
-import { NextAuthOptions } from 'next-auth';
+import NextAuth from 'next-auth';
 import { PrismaAdapter } from '@auth/prisma-adapter';
-import GoogleProvider from 'next-auth/providers/google';
-// import EmailProvider from 'next-auth/providers/email';
+import Google from 'next-auth/providers/google';
 import prisma from './prisma';
 
-export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as any,
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  adapter: PrismaAdapter(prisma),
   providers: [
-    GoogleProvider({
+    Google({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     }),
-    // EmailProvider - Uncomment when you have EMAIL_SERVER configured
-    // EmailProvider({
-    //   server: process.env.EMAIL_SERVER,
-    //   from: process.env.EMAIL_FROM || 'noreply@legacynetwork.app',
-    // }),
   ],
   callbacks: {
     async session({ session, user }) {
@@ -27,10 +21,6 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/auth/signin',
-    verifyRequest: '/auth/verify',
     error: '/auth/error',
   },
-  session: {
-    strategy: 'database',
-  },
-};
+});
