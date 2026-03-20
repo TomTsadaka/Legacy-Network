@@ -25,9 +25,13 @@ export default function SignInPage() {
         callbackUrl: '/dashboard',
       });
 
+      console.log('Sign in result:', result);
+
       if (result?.error) {
+        console.log('Error:', result.error);
         setError('Invalid email or password');
       } else if (result?.ok) {
+        console.log('Success! Redirecting...');
         window.location.href = '/dashboard';
       }
     } catch (error) {
