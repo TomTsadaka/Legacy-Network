@@ -6,12 +6,42 @@ import Link from 'next/link';
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [loginMode, setLoginMode] = useState<'magic' | 'password'>('password');
+  const [error, setError] = useState('');
+
+  const handlePasswordSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+        callbackUrl: '/dashboard',
+      });
+
+      if (result?.error) {
+        setError('Invalid email or password');
+      } else if (result?.ok) {
+        window.location.href = '/dashboard';
+      }
+    } catch (error) {
+      console.error('Sign in error:', error);
+      setError('Something went wrong');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
 
     try {
       const result = await signIn('email', {
@@ -22,9 +52,12 @@ export default function SignInPage() {
 
       if (result?.ok) {
         setEmailSent(true);
+      } else {
+        setError('Failed to send magic link');
       }
     } catch (error) {
       console.error('Sign in error:', error);
+      setError('Something went wrong');
     } finally {
       setIsLoading(false);
     }
@@ -102,31 +135,109 @@ export default function SignInPage() {
           </div>
         </div>
 
-        {/* Email Sign In */}
-        <form onSubmit={handleEmailSignIn}>
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
-          </div>
-
+        {/* Mode Toggle */}
+        <div className="flex gap-2 mb-6 bg-gray-100 p-1 rounded-lg">
           <button
-            type="submit"
-            disabled={isLoading}
-            className="btn-primary w-full text-lg py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            type="button"
+            onClick={() => setLoginMode('password')}
+            className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${
+              loginMode === 'password'
+                ? 'bg-white text-primary shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
           >
-            {isLoading ? 'Sending...' : 'Send Magic Link'}
+            Password
           </button>
-        </form>
+          <button
+            type="button"
+            onClick={() => setLoginMode('magic')}
+            className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${
+              loginMode === 'magic'
+                ? 'bg-white text-primary shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Magic Link
+          </button>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {error}
+          </div>
+        )}
+
+        {/* Password Sign In */}
+        {loginMode === 'password' && (
+          <form onSubmit={handlePasswordSignIn}>
+            <div className="mb-4">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@legacy.network"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
+
+            <div className="mb-6">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="btn-primary w-full text-lg py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+        )}
+
+        {/* Magic Link Sign In */}
+        {loginMode === 'magic' && (
+          <form onSubmit={handleEmailSignIn}>
+            <div className="mb-4">
+              <label htmlFor="magic-email" className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address
+              </label>
+              <input
+                id="magic-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="btn-primary w-full text-lg py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Sending...' : 'Send Magic Link'}
+            </button>
+          </form>
+        )}
 
         {/* Footer */}
         <p className="text-center text-sm text-gray-500 mt-6">
