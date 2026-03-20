@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import { getUpcomingBirthdays } from '@/lib/age-calculator';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   // Temporarily bypass auth - use admin user
   const adminUser = await prisma.user.findUnique({
