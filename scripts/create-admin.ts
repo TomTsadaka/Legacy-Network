@@ -35,7 +35,6 @@ async function main() {
         create: {
           userId: user.id,
           role: 'OWNER',
-          joinedAt: new Date(),
         }
       }
     }
