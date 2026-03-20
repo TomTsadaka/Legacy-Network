@@ -1,0 +1,78 @@
+import { PrismaClient } from '@prisma/client'
+import { hash } from 'bcryptjs'
+
+const prisma = new PrismaClient()
+
+async function main() {
+  const email = 'admin@legacy.network'
+  const password = 'Admin@2026Legacy!'
+  const hashedPassword = await hash(password, 12)
+
+  // Check if user already exists
+  const existing = await prisma.user.findUnique({
+    where: { email }
+  })
+
+  if (existing) {
+    console.log('✅ Admin user already exists:', email)
+    return
+  }
+
+  // Create admin user
+  const user = await prisma.user.create({
+    data: {
+      email,
+      name: 'Super Admin',
+      emailVerified: new Date(),
+    }
+  })
+
+  // Create a family for the admin
+  const family = await prisma.family.create({
+    data: {
+      name: 'Admin Family',
+      members: {
+        create: {
+          userId: user.id,
+          role: 'OWNER',
+          joinedAt: new Date(),
+        }
+      }
+    }
+  })
+
+  // Add some sample children
+  await prisma.child.createMany({
+    data: [
+      {
+        familyId: family.id,
+        name: 'Sample Child 1',
+        birthDate: new Date('2018-06-15'),
+        gender: 'OTHER',
+      },
+      {
+        familyId: family.id,
+        name: 'Sample Child 2',
+        birthDate: new Date('2020-03-22'),
+        gender: 'OTHER',
+      }
+    ]
+  })
+
+  console.log('\n🎉 Super Admin Created Successfully!\n')
+  console.log('═══════════════════════════════════')
+  console.log('📧 Email:    ', email)
+  console.log('🔑 Password: ', password)
+  console.log('═══════════════════════════════════')
+  console.log('\n⚠️  Save these credentials securely!')
+  console.log(`\n🌐 Login at: https://legacy-network-mu.vercel.app/auth/signin`)
+}
+
+main()
+  .catch((e) => {
+    console.error('Error creating admin:', e)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })
