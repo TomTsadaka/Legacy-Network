@@ -31,6 +31,22 @@
   - [x] Children grid
   - [x] Quick actions
 
+## ✅ Phase 2.5: Enhanced Authentication & Permissions (COMPLETED)
+
+- [x] Username/password authentication (Credentials provider)
+- [x] Demo admin user with seed script
+- [x] User role system (SUPER_ADMIN, USER)
+- [x] Family role hierarchy (OWNER, PARTNER, MEMBER, VIEWER)
+- [x] Updated schema with username field
+- [x] Enhanced sign-in page (username OR email)
+- [x] Comprehensive auth documentation (AUTH_SYSTEM.md)
+- [x] Demo data seeding:
+  - [x] Admin user (demo/demo123)
+  - [x] Demo family with 2 children
+  - [x] Sample journal entries
+- [x] Permission matrix defined
+- [x] Security features implemented
+
 ## 📋 Phase 3: Dashboard & Timeline (NEXT)
 
 - [ ] Timeline feed page
@@ -93,17 +109,26 @@
 
 ## 📊 Current Status
 
-**Overall Progress**: 40% Complete
+**Overall Progress**: 50% Complete
 
 - ✅ Foundation: 100%
 - ✅ Authentication: 100%
+- ✅ Permission System: 100%
 - ⏳ Core Features: 20%
 - ⏳ Polish: 0%
 
 **Next Steps**: Build the Timeline Feed and Entry Creation system.
 
+**Latest Update (March 21, 2026):**
+- ✅ Added username/password authentication
+- ✅ Created demo admin user with full system access
+- ✅ Implemented hierarchical permission system (User + Family roles)
+- ✅ Updated sign-in page to support username OR email
+- ✅ Created comprehensive AUTH_SYSTEM.md documentation
+- ✅ Seed script with demo data (family + children + entries)
+
 ---
 
 **Built by**: Tom Tsadaka with AI assistance from Sam (OpenClaw)  
 **Started**: March 19, 2026  
-**Last Updated**: March 19, 2026 17:53
+**Last Updated**: March 21, 2026 21:13

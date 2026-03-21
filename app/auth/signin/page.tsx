@@ -5,7 +5,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 
 export default function SignInPage() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -19,7 +19,7 @@ export default function SignInPage() {
 
     try {
       const result = await signIn('credentials', {
-        email,
+        username,
         password,
         redirect: false,
         callbackUrl: '/dashboard',
@@ -29,7 +29,7 @@ export default function SignInPage() {
 
       if (result?.error) {
         console.log('Error:', result.error);
-        setError('Invalid email or password');
+        setError('Invalid username/email or password');
       } else if (result?.ok) {
         console.log('Success! Redirecting...');
         window.location.href = '/dashboard';
@@ -49,7 +49,7 @@ export default function SignInPage() {
 
     try {
       const result = await signIn('email', {
-        email,
+        email: username,
         redirect: false,
         callbackUrl: '/onboarding',
       });
@@ -78,7 +78,7 @@ export default function SignInPage() {
           <div className="text-6xl mb-4">📧</div>
           <h2 className="text-2xl font-bold mb-4">Check Your Email</h2>
           <p className="text-gray-600 mb-6">
-            We've sent a magic link to <strong>{email}</strong>.
+            We've sent a magic link to <strong>{username}</strong>.
             Click the link in the email to sign in.
           </p>
           <button
@@ -176,15 +176,15 @@ export default function SignInPage() {
         {loginMode === 'password' && (
           <form onSubmit={handlePasswordSignIn}>
             <div className="mb-4">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                Username or Email
               </label>
               <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@legacy.network"
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="demo or demo@legacy-network.com"
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               />
@@ -225,8 +225,8 @@ export default function SignInPage() {
               <input
                 id="magic-email"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 placeholder="you@example.com"
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"

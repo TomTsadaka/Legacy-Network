@@ -20,7 +20,9 @@ model User {
   email         String          @unique
   emailVerified DateTime?
   image         String?
-  password      String?         // For admin/test users with password login
+  username      String?         @unique // For demo/admin login
+  password      String?         // Hashed password for demo/admin users
+  role          UserRole        @default(USER)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
@@ -33,6 +35,11 @@ model User {
   comments      Comment[]
 
   @@map("users")
+}
+
+enum UserRole {
+  SUPER_ADMIN // Full system access
+  USER        // Regular user
 }
 
 // NextAuth.js models
@@ -115,9 +122,10 @@ model FamilyMember {
 }
 
 enum FamilyRole {
-  OWNER   // Created the family
-  PARTNER // Invited spouse/partner
-  MEMBER  // Other family member
+  OWNER   // Created the family - full access
+  PARTNER // Invited spouse/partner - full access
+  MEMBER  // Family member - can create entries
+  VIEWER  // Read-only access
 }
 
 // ============================================

@@ -56,12 +56,41 @@ Edit `.env`:
 - Optional: Add Google OAuth credentials
 - Optional: Add Email provider for Magic Links
 
-### 4. Run Development Server
+### 4. Seed Demo Data (Optional)
+```bash
+npm run db:seed
+```
+
+This creates a demo admin account with sample data.
+
+### 5. Run Development Server
 ```bash
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000)
+
+## 🎯 Quick Start - Demo Account
+
+A built-in demo account is available for testing:
+
+**Login Credentials:**
+- Username: `demo`
+- Password: `demo123`
+- Email: `demo@legacy-network.com`
+
+**What's included:**
+- SUPER_ADMIN role (full system access)
+- Demo family "משפחת דמו"
+- 2 demo children (נועה and יונתן)
+- 2 sample journal entries
+
+Access the demo by:
+1. Running `npm run db:seed` (if not done already)
+2. Navigate to `/auth/signin`
+3. Enter username: `demo` and password: `demo123`
+
+For detailed authentication documentation, see [AUTH_SYSTEM.md](./AUTH_SYSTEM.md).
 
 ## 📊 Database Schema
 

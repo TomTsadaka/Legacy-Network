@@ -7,18 +7,24 @@ import { getUpcomingBirthdays } from '@/lib/age-calculator';
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
-  // Temporarily bypass auth - use admin user
-  const adminUser = await prisma.user.findUnique({
-    where: { email: 'admin@legacy.network' }
+  // Get authenticated user
+  const session = await auth();
+  
+  if (!session?.user?.email) {
+    redirect('/auth/signin');
+  }
+
+  const currentUser = await prisma.user.findUnique({
+    where: { email: session.user.email }
   });
 
-  if (!adminUser) {
-    return <div>Admin user not found. Please run setup.</div>;
+  if (!currentUser) {
+    return <div>User not found. Please sign in again.</div>;
   }
 
   // Get user's family
   const familyMember = await prisma.familyMember.findFirst({
-    where: { userId: adminUser.id },
+    where: { userId: currentUser.id },
     include: {
       family: {
         include: {
@@ -42,7 +48,15 @@ export default async function DashboardPage() {
   });
 
   if (!familyMember) {
-    redirect('/onboarding');
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Welcome to Legacy Network!</h1>
+          <p className="text-gray-600 mb-4">Your admin account is ready, but you need to complete setup first.</p>
+          <a href="/onboarding" className="btn-primary">Complete Setup</a>
+        </div>
+      </div>
+    );
   }
 
   const { family } = familyMember;
@@ -58,7 +72,10 @@ export default async function DashboardPage() {
               Legacy Network
             </h1>
             <div className="flex items-center gap-4">
-              <span className="text-gray-600">Welcome, {adminUser.name}!</span>
+              <span className="text-gray-600">
+                Welcome, {currentUser.name}!
+                {currentUser.role === 'SUPER_ADMIN' && <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Super Admin</span>}
+              </span>
             </div>
           </div>
         </div>
