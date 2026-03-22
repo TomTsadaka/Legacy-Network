@@ -398,7 +398,11 @@ export default function CreateEntryPage() {
             {/* Generate Button */}
             <button
               type="button"
-              onClick={generateWithAI}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                generateWithAI();
+              }}
               disabled={aiGenerating || !aiEvent}
               className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 md:py-4 px-6 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base md:text-lg"
             >
