@@ -18,6 +18,13 @@ export default function CreateEntryPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // AI mode
+  const [useAI, setUseAI] = useState(false);
+  const [aiEvent, setAiEvent] = useState('');
+  const [aiFeeling, setAiFeeling] = useState('');
+  const [aiDetails, setAiDetails] = useState('');
+  const [aiGenerating, setAiGenerating] = useState(false);
+
   const [family, setFamily] = useState<any>(null);
   const [children, setChildren] = useState<any[]>([]);
 
@@ -47,6 +54,51 @@ export default function CreateEntryPage() {
       }
     } catch (error) {
       console.error('Error loading family:', error);
+    }
+  }
+
+  async function generateWithAI() {
+    if (!aiEvent.trim()) {
+      setError('יש להזין מה קרה');
+      return;
+    }
+
+    setAiGenerating(true);
+    setError('');
+
+    try {
+      const selectedChildName = selectedChildren.length > 0
+        ? children.find(c => c.id === selectedChildren[0])?.name
+        : undefined;
+
+      const res = await fetch('/api/ai/generate-story', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: aiEvent,
+          location: location || undefined,
+          feeling: aiFeeling || undefined,
+          details: aiDetails || undefined,
+          childName: selectedChildName,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to generate story');
+      }
+
+      // Set the generated content
+      setContent(data.story);
+      setTitle(aiEvent.slice(0, 50) + (aiEvent.length > 50 ? '...' : ''));
+      
+      // Switch to manual mode to allow editing
+      setUseAI(false);
+    } catch (err: any) {
+      setError(err.message || 'משהו השתבש ביצירת הסיפור');
+    } finally {
+      setAiGenerating(false);
     }
   }
 
@@ -138,11 +190,39 @@ export default function CreateEntryPage() {
           <p className="text-purple-600 font-medium text-lg">שתף רגע מיוחד שישאר לנצח! ✨</p>
         </div>
 
+        {/* Mode Toggle */}
+        <div className="flex gap-3 mb-6">
+          <button
+            type="button"
+            onClick={() => setUseAI(false)}
+            className={`flex-1 py-4 px-6 rounded-2xl border-3 font-bold transition-all flex items-center justify-center gap-2 ${
+              !useAI
+                ? 'bg-gradient-to-br from-blue-400 to-cyan-400 text-white shadow-lg scale-105'
+                : 'bg-white border-blue-200 text-blue-700 hover:border-blue-400'
+            }`}
+          >
+            <span className="text-2xl">✍️</span>
+            <span>כתוב בעצמך</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setUseAI(true)}
+            className={`flex-1 py-4 px-6 rounded-2xl border-3 font-bold transition-all flex items-center justify-center gap-2 ${
+              useAI
+                ? 'bg-gradient-to-br from-purple-400 to-pink-400 text-white shadow-lg scale-105'
+                : 'bg-white border-blue-200 text-blue-700 hover:border-blue-400'
+            }`}
+          >
+            <span className="text-2xl">🤖</span>
+            <span>כתוב עם AI</span>
+          </button>
+        </div>
+
         {/* Form */}
-        <form onSubmit={handleSubmit} className="card-playful p-8 space-y-6">
+        <form onSubmit={handleSubmit} className="card-playful p-4 md:p-8 space-y-4 md:space-y-6">
           {/* Error */}
           {error && (
-            <div className="p-4 bg-red-100 border-2 border-red-300 rounded-2xl text-red-700 font-medium">
+            <div className="p-4 bg-red-100 border-2 border-red-300 rounded-2xl text-red-700 font-medium text-sm md:text-base">
               {error}
             </div>
           )}
