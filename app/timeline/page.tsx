@@ -129,7 +129,7 @@ export default function TimelinePage() {
   return (
     <div className="min-h-screen pb-8">
       {/* Header with gradient */}
-      <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-sky-500 shadow-xl sticky top-0 z-10">
+      <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-sky-500 shadow-xl">
         <div className="max-w-4xl mx-auto px-4 py-8">
           <div className="flex items-center justify-between mb-6">
             <div>
