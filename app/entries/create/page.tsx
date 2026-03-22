@@ -21,6 +21,7 @@ export default function CreateEntryPage() {
   const [aiFeeling, setAiFeeling] = useState('');
   const [aiDetails, setAiDetails] = useState('');
   const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiSuccess, setAiSuccess] = useState(false);
 
   // Common fields
   const [eventDate, setEventDate] = useState(new Date().toISOString().split('T')[0]);
@@ -116,6 +117,7 @@ export default function CreateEntryPage() {
       
       // Switch to manual mode to allow editing
       setMode('manual');
+      setAiSuccess(true);
       
       // Clear AI fields
       setAiEvent('');
@@ -123,6 +125,15 @@ export default function CreateEntryPage() {
       setAiDetails('');
       
       console.log('[Frontend] Switched to manual mode');
+
+      // Scroll to content field after a short delay
+      setTimeout(() => {
+        const contentField = document.getElementById('content');
+        if (contentField) {
+          contentField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          contentField.focus();
+        }
+      }, 300);
     } catch (err: any) {
       console.error('[Frontend] Error in generateWithAI:', err);
       console.error('[Frontend] Error message:', err.message);
@@ -253,6 +264,29 @@ export default function CreateEntryPage() {
         {error && (
           <div className="p-4 bg-red-100 border-2 border-red-300 rounded-2xl text-red-700 font-medium text-sm md:text-base mb-6">
             {error}
+          </div>
+        )}
+
+        {/* AI Success */}
+        {aiSuccess && mode === 'manual' && (
+          <div className="p-4 bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-300 rounded-2xl mb-6 animate-fadeIn">
+            <div className="flex items-center gap-3">
+              <div className="text-3xl">✨</div>
+              <div className="flex-1">
+                <p className="text-green-700 font-bold text-base md:text-lg mb-1">
+                  הסיפור נוצר בהצלחה! 🎉
+                </p>
+                <p className="text-green-600 text-sm md:text-base">
+                  ערוך את הטקסט למטה לפי רצונך ולחץ "שמור זיכרון קסום" כדי לסיים
+                </p>
+              </div>
+              <button
+                onClick={() => setAiSuccess(false)}
+                className="text-green-700 hover:text-green-900 font-bold text-xl"
+              >
+                ✕
+              </button>
+            </div>
           </div>
         )}
 
@@ -429,6 +463,11 @@ export default function CreateEntryPage() {
               <label htmlFor="title" className="block text-base md:text-lg font-bold text-blue-700 mb-2 md:mb-3 flex items-center gap-2">
                 <span className="text-xl md:text-2xl">✨</span>
                 כותרת הזיכרון *
+                {aiSuccess && (
+                  <span className="text-sm font-normal text-green-600">
+                    (נוצר אוטומטית)
+                  </span>
+                )}
               </label>
               <input
                 id="title"
@@ -437,7 +476,9 @@ export default function CreateEntryPage() {
                 onChange={(e) => setTitle(e.target.value)}
                 required
                 placeholder="למשל: הצעד הראשון של עילאי ורוי! 👣"
-                className="input-playful text-base md:text-lg"
+                className={`input-playful text-base md:text-lg ${
+                  aiSuccess ? 'ring-4 ring-green-300 bg-green-50' : ''
+                }`}
               />
             </div>
 
@@ -529,15 +570,25 @@ export default function CreateEntryPage() {
               <label htmlFor="content" className="block text-base md:text-lg font-bold text-blue-700 mb-2 md:mb-3 flex items-center gap-2">
                 <span className="text-xl md:text-2xl">📖</span>
                 ספר לנו על הרגע המיוחד *
+                {aiSuccess && (
+                  <span className="text-sm font-normal text-green-600 animate-pulse">
+                    (נוצר על ידי AI - ערוך לפי רצונך!)
+                  </span>
+                )}
               </label>
               <textarea
                 id="content"
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={(e) => {
+                  setContent(e.target.value);
+                  if (aiSuccess) setAiSuccess(false); // Clear highlight once user starts editing
+                }}
                 required
                 rows={8}
                 placeholder="כתוב את הזיכרון הקסום שלך כאן... 🌟"
-                className="input-playful text-base md:text-lg resize-none"
+                className={`input-playful text-base md:text-lg resize-none ${
+                  aiSuccess ? 'ring-4 ring-green-300 bg-green-50' : ''
+                }`}
               />
               <div className="flex items-center justify-between mt-2">
                 <p className="text-xs md:text-sm text-blue-600 font-medium">
