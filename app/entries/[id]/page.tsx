@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { ArrowRight, Calendar, MapPin, Sparkles } from 'lucide-react';
+import { ArrowRight, Calendar, MapPin, Sparkles, Edit, Trash2, History, AlertTriangle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
 
@@ -13,6 +13,8 @@ export default function EntryViewPage() {
   const { status } = useSession();
   const [entry, setEntry] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -40,6 +42,29 @@ export default function EntryViewPage() {
       router.push('/timeline');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!entry) return;
+
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/entries/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to delete entry');
+      }
+
+      router.push('/timeline');
+    } catch (error) {
+      console.error('Error deleting entry:', error);
+      alert('שגיאה במחיקת הזיכרון');
+    } finally {
+      setDeleting(false);
+      setShowDeleteModal(false);
     }
   }
 
@@ -89,14 +114,41 @@ export default function EntryViewPage() {
   return (
     <div className="min-h-screen py-4 md:py-8">
       <div className="max-w-4xl mx-auto px-4">
-        {/* Back button */}
-        <button
-          onClick={() => router.push('/timeline')}
-          className="text-blue-600 hover:text-blue-700 mb-6 flex items-center gap-2 font-bold transition-all hover:gap-3"
-        >
-          <ArrowRight className="w-5 h-5" />
-          חזרה לציר הזמן
-        </button>
+        {/* Back button + Actions */}
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={() => router.push('/timeline')}
+            className="text-blue-600 hover:text-blue-700 flex items-center gap-2 font-bold transition-all hover:gap-3"
+          >
+            <ArrowRight className="w-5 h-5" />
+            חזרה לציר הזמן
+          </button>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => router.push(`/entries/${id}/history`)}
+              className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-white border-2 border-purple-300 text-purple-700 hover:bg-purple-50 font-bold transition-all text-sm md:text-base"
+            >
+              <History className="w-4 h-4" />
+              <span className="hidden md:inline">היסטוריה</span>
+            </button>
+            <button
+              onClick={() => router.push(`/entries/${id}/edit`)}
+              className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-white border-2 border-blue-300 text-blue-700 hover:bg-blue-50 font-bold transition-all text-sm md:text-base"
+            >
+              <Edit className="w-4 h-4" />
+              <span className="hidden md:inline">ערוך</span>
+            </button>
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-white border-2 border-red-300 text-red-700 hover:bg-red-50 font-bold transition-all text-sm md:text-base"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span className="hidden md:inline">מחק</span>
+            </button>
+          </div>
+        </div>
 
         {/* Entry Card */}
         <div className={`card-playful p-6 md:p-8 border-r-8 ${style.border}`}>
@@ -191,6 +243,52 @@ export default function EntryViewPage() {
       <div className="fixed bottom-1/4 right-10 text-6xl opacity-20 animate-float pointer-events-none hidden md:block" style={{ animationDelay: '1.5s' }}>
         ⭐
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl animate-fadeIn">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="w-8 h-8 text-red-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                למחוק את הזיכרון?
+              </h3>
+              <p className="text-gray-600">
+                פעולה זו תמחק את הזיכרון לצמיתות, כולל את כל ההיסטוריה שלו. לא ניתן לשחזר!
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="flex-1 px-6 py-3 rounded-full border-2 border-gray-300 text-gray-700 font-bold hover:bg-gray-50 transition-all disabled:opacity-50"
+              >
+                ביטול
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 px-6 py-3 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white font-bold hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {deleting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                    מוחק...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-5 h-5" />
+                    מחק לצמיתות
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

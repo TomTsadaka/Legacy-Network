@@ -27,12 +27,13 @@ model User {
   updatedAt     DateTime        @updatedAt
 
   // Relations
-  accounts      Account[]
-  sessions      Session[]
-  families      FamilyMember[]  // User can belong to multiple families
-  entries       Entry[]         // Entries authored by this user
-  likes         Like[]
-  comments      Comment[]
+  accounts       Account[]
+  sessions       Session[]
+  families       FamilyMember[]  // User can belong to multiple families
+  entries        Entry[]         @relation("EntryAuthor") // Entries authored by this user
+  likes          Like[]
+  comments       Comment[]
+  entryVersions  EntryVersion[]  // Version edits by this user
 
   @@map("users")
 }
@@ -178,11 +179,12 @@ model Entry {
   updatedAt DateTime @updatedAt
 
   // Relations
-  author         User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  family         Family       @relation(fields: [familyId], references: [id], onDelete: Cascade)
-  taggedChildren EntryChild[] // Children tagged in this entry
+  author         User           @relation("EntryAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  family         Family         @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  taggedChildren EntryChild[]   // Children tagged in this entry
   likes          Like[]
   comments       Comment[]
+  versions       EntryVersion[] // Version history
 
   @@index([familyId])
   @@index([authorId])
@@ -203,6 +205,33 @@ model EntryChild {
   @@unique([entryId, childId])
   @@index([childId])
   @@map("entry_children")
+}
+
+// Entry Version History - Track all changes
+model EntryVersion {
+  id        String   @id @default(cuid())
+  entryId   String
+  version   Int      // Sequential version number
+  
+  // Snapshot of entry at this version
+  title     String
+  content   String   @db.Text
+  eventDate DateTime
+  location  String?
+  category  Category
+  
+  // Who made this change
+  editedBy  String
+  editedAt  DateTime @default(now())
+  
+  // Relations
+  entry     Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  editor    User     @relation(fields: [editedBy], references: [id])
+
+  @@unique([entryId, version])
+  @@index([entryId])
+  @@index([editedAt])
+  @@map("entry_versions")
 }
 
 enum Category {
