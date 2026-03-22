@@ -3,16 +3,24 @@ import { auth } from '@/lib/auth';
 
 // POST /api/ai/generate-story - Generate memory story with AI
 export async function POST(request: Request) {
+  console.log('[AI Story] Request received');
+  
   try {
     const session = await auth();
     if (!session?.user) {
+      console.log('[AI Story] Unauthorized - no session');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    console.log('[AI Story] User authenticated:', session.user.email);
 
     const body = await request.json();
     const { event, location, feeling, details, childName } = body;
 
+    console.log('[AI Story] Request params:', { event, location, feeling, childName });
+
     if (!event) {
+      console.log('[AI Story] Missing event');
       return NextResponse.json(
         { error: 'Event description required' },
         { status: 400 }
@@ -20,8 +28,17 @@ export async function POST(request: Request) {
     }
 
     // Check if API key is configured
+    const hasOpenAI = !!process.env.OPENAI_API_KEY;
+    const hasGemini = !!process.env.GOOGLE_AI_KEY;
+    
+    console.log('[AI Story] API keys available:', { 
+      openai: hasOpenAI, 
+      gemini: hasGemini 
+    });
+
     const apiKey = process.env.OPENAI_API_KEY || process.env.GOOGLE_AI_KEY;
     if (!apiKey) {
+      console.log('[AI Story] No API key configured');
       return NextResponse.json(
         { 
           error: 'AI not configured',
@@ -33,17 +50,22 @@ export async function POST(request: Request) {
 
     // Build prompt
     const prompt = buildPrompt({ event, location, feeling, details, childName });
+    console.log('[AI Story] Prompt built, length:', prompt.length);
 
     // Call AI API
     let story: string;
     
     if (process.env.OPENAI_API_KEY) {
+      console.log('[AI Story] Using OpenAI');
       story = await callOpenAI(prompt, process.env.OPENAI_API_KEY);
     } else if (process.env.GOOGLE_AI_KEY) {
+      console.log('[AI Story] Using Gemini');
       story = await callGemini(prompt, process.env.GOOGLE_AI_KEY);
     } else {
       throw new Error('No AI API key configured');
     }
+
+    console.log('[AI Story] Story generated successfully, length:', story.length);
 
     return NextResponse.json({
       success: true,
@@ -51,7 +73,9 @@ export async function POST(request: Request) {
       message: 'הסיפור נוצר בהצלחה!',
     });
   } catch (error: any) {
-    console.error('AI generation error:', error);
+    console.error('[AI Story] Error:', error);
+    console.error('[AI Story] Error message:', error.message);
+    console.error('[AI Story] Error stack:', error.stack);
     return NextResponse.json(
       { 
         error: 'Failed to generate story',
