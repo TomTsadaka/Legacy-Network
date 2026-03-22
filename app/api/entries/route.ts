@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-// GET /api/memories - Fetch memories with filters
+// GET /api/entries - Fetch entries with filters
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
     const where: any = { familyId };
 
     if (childId) {
-      where.children = { some: { id: childId } };
+      where.taggedChildren = { some: { childId } };
     }
 
     if (category) {
@@ -53,16 +53,20 @@ export async function GET(request: Request) {
       ];
     }
 
-    // Fetch memories
-    const [memories, total] = await Promise.all([
-      prisma.memory.findMany({
+    // Fetch entries
+    const [entries, total] = await Promise.all([
+      prisma.entry.findMany({
         where,
         include: {
-          children: {
-            select: {
-              id: true,
-              name: true,
-              birthDate: true,
+          taggedChildren: {
+            include: {
+              child: {
+                select: {
+                  id: true,
+                  name: true,
+                  birthDate: true,
+                },
+              },
             },
           },
           author: {
@@ -73,53 +77,54 @@ export async function GET(request: Request) {
             },
           },
         },
-        orderBy: { date: 'desc' },
+        orderBy: { eventDate: 'desc' },
         take: limit,
         skip: offset,
       }),
-      prisma.memory.count({ where }),
+      prisma.entry.count({ where }),
     ]);
 
-    // Calculate age at memory for each child
-    const memoriesWithAge = memories.map((memory) => ({
-      ...memory,
-      children: memory.children.map((child) => {
-        const ageMonths = calculateAgeInMonths(child.birthDate, memory.date);
+    // Calculate age at entry for each child
+    const entriesWithAge = entries.map((entry) => ({
+      ...entry,
+      children: entry.taggedChildren.map(({ child }) => {
+        const ageMonths = calculateAgeInMonths(child.birthDate, entry.eventDate);
         return {
           ...child,
-          ageAtMemory: formatAge(ageMonths),
+          ageAtEntry: formatAge(ageMonths),
           ageMonths,
         };
       }),
     }));
 
     return NextResponse.json({
-      memories: memoriesWithAge,
+      entries: entriesWithAge,
       total,
-      hasMore: offset + memories.length < total,
+      hasMore: offset + entries.length < total,
     });
   } catch (error) {
-    console.error('Error fetching memories:', error);
+    console.error('Error fetching entries:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch memories' },
+      { error: 'Failed to fetch entries' },
       { status: 500 }
     );
   }
 }
 
 // Helper: Calculate age in months
-function calculateAgeInMonths(birthDate: Date, memoryDate: Date): number {
+function calculateAgeInMonths(birthDate: Date, eventDate: Date): number {
   const birth = new Date(birthDate);
-  const memory = new Date(memoryDate);
+  const event = new Date(eventDate);
   
-  const years = memory.getFullYear() - birth.getFullYear();
-  const months = memory.getMonth() - birth.getMonth();
+  const years = event.getFullYear() - birth.getFullYear();
+  const months = event.getMonth() - birth.getMonth();
   
   return years * 12 + months;
 }
 
 // Helper: Format age
 function formatAge(months: number): string {
+  if (months < 0) return 'טרם נולד';
   if (months < 12) {
     return `${months} חודשים`;
   }

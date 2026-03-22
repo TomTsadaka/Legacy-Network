@@ -3,14 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import MemoryCard from '@/components/MemoryCard';
-import { Search, Filter, Plus } from 'lucide-react';
+import EntryCard from '@/components/EntryCard';
+import { Search, Plus } from 'lucide-react';
 
 export default function TimelinePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [memories, setMemories] = useState<any[]>([]);
+  const [entries, setEntries] = useState<any[]>([]);
   const [children, setChildren] = useState<any[]>([]);
   const [family, setFamily] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -32,10 +32,10 @@ export default function TimelinePage() {
     }
   }, [status]);
 
-  // Load memories when filters change
+  // Load entries when filters change
   useEffect(() => {
     if (family) {
-      loadMemories();
+      loadEntries();
     }
   }, [family, selectedChild, selectedCategory, searchQuery]);
 
@@ -58,7 +58,7 @@ export default function TimelinePage() {
     }
   }
 
-  async function loadMemories() {
+  async function loadEntries() {
     try {
       setLoading(true);
       
@@ -71,12 +71,12 @@ export default function TimelinePage() {
       if (selectedCategory) params.append('category', selectedCategory);
       if (searchQuery) params.append('search', searchQuery);
 
-      const res = await fetch(`/api/memories?${params}`);
+      const res = await fetch(`/api/entries?${params}`);
       const data = await res.json();
 
-      setMemories(data.memories || []);
+      setEntries(data.entries || []);
     } catch (error) {
-      console.error('Error loading memories:', error);
+      console.error('Error loading entries:', error);
     } finally {
       setLoading(false);
     }
@@ -84,7 +84,7 @@ export default function TimelinePage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">טוען זיכרונות...</p>
@@ -95,20 +95,14 @@ export default function TimelinePage() {
 
   if (!family) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            אין משפחה פעילה
+            שגיאה בטעינת משפחה
           </h2>
           <p className="text-gray-600 mb-6">
-            יש ליצור משפחה כדי להתחיל לשמור זיכרונות
+            אנא צור קשר עם התמיכה
           </p>
-          <button
-            onClick={() => router.push('/families/create')}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            צור משפחה חדשה
-          </button>
         </div>
       </div>
     );
@@ -116,11 +110,13 @@ export default function TimelinePage() {
 
   const categories = [
     { value: 'MILESTONE', label: 'אבן דרך' },
-    { value: 'DAILY', label: 'יומי' },
-    { value: 'SPECIAL', label: 'מיוחד' },
-    { value: 'ACHIEVEMENT', label: 'הישג' },
-    { value: 'FUNNY', label: 'מצחיק' },
-    { value: 'EMOTIONAL', label: 'רגשי' },
+    { value: 'DAILY_LIFE', label: 'יומי' },
+    { value: 'SPECIAL_EVENT', label: 'אירוע מיוחד' },
+    { value: 'HEALTH', label: 'בריאות' },
+    { value: 'EDUCATION', label: 'חינוך' },
+    { value: 'FAMILY', label: 'משפחה' },
+    { value: 'TRAVEL', label: 'טיול' },
+    { value: 'OTHER', label: 'אחר' },
   ];
 
   return (
@@ -134,12 +130,12 @@ export default function TimelinePage() {
                 ציר הזמן
               </h1>
               <p className="text-gray-600 mt-1">
-                {family.name} • {memories.length} זיכרונות
+                {family.name} • {entries.length} זיכרונות
               </p>
             </div>
             
             <button
-              onClick={() => router.push('/memories/create')}
+              onClick={() => router.push('/entries/create')}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Plus className="w-5 h-5" />
@@ -162,18 +158,20 @@ export default function TimelinePage() {
             </div>
 
             {/* Child filter */}
-            <select
-              value={selectedChild}
-              onChange={(e) => setSelectedChild(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">כל הילדים</option>
-              {children.map((child) => (
-                <option key={child.id} value={child.id}>
-                  {child.name}
-                </option>
-              ))}
-            </select>
+            {children.length > 0 && (
+              <select
+                value={selectedChild}
+                onChange={(e) => setSelectedChild(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">כל הילדים</option>
+                {children.map((child) => (
+                  <option key={child.id} value={child.id}>
+                    {child.name}
+                  </option>
+                ))}
+              </select>
+            )}
 
             {/* Category filter */}
             <select
@@ -194,7 +192,7 @@ export default function TimelinePage() {
 
       {/* Timeline */}
       <div className="max-w-4xl mx-auto px-4 py-8">
-        {memories.length === 0 ? (
+        {entries.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg mb-4">
               {searchQuery || selectedChild || selectedCategory
@@ -203,7 +201,7 @@ export default function TimelinePage() {
             </p>
             {!searchQuery && !selectedChild && !selectedCategory && (
               <button
-                onClick={() => router.push('/memories/create')}
+                onClick={() => router.push('/entries/create')}
                 className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
               >
                 צור זיכרון ראשון
@@ -212,11 +210,11 @@ export default function TimelinePage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {memories.map((memory) => (
-              <MemoryCard
-                key={memory.id}
-                memory={memory}
-                onClick={() => router.push(`/memories/${memory.id}`)}
+            {entries.map((entry) => (
+              <EntryCard
+                key={entry.id}
+                entry={entry}
+                onClick={() => router.push(`/entries/${entry.id}`)}
               />
             ))}
           </div>
