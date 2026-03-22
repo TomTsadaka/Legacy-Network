@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import EntryCard from '@/components/EntryCard';
-import { Search, Plus, Sparkles } from 'lucide-react';
+import { Search, Plus, Sparkles, Users } from 'lucide-react';
 
 export default function TimelinePage() {
   const { data: session, status } = useSession();
@@ -129,7 +129,7 @@ export default function TimelinePage() {
   return (
     <div className="min-h-screen pb-8">
       {/* Header with gradient */}
-      <div className="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 shadow-xl sticky top-0 z-10">
+      <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-sky-500 shadow-xl sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-8">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -142,14 +142,23 @@ export default function TimelinePage() {
               </p>
             </div>
             
-            <button
-              onClick={() => router.push('/entries/create')}
-              className="bg-white text-purple-600 font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 flex items-center gap-2"
-            >
-              <Plus className="w-6 h-6" />
-              <span>זיכרון חדש</span>
-              <Sparkles className="w-5 h-5" />
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => router.push('/family/members')}
+                className="bg-white text-blue-600 font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 flex items-center gap-2"
+              >
+                <span className="text-2xl">👨‍👩‍👧‍👦</span>
+                <span>המשפחה</span>
+              </button>
+              <button
+                onClick={() => router.push('/entries/create')}
+                className="bg-white text-blue-600 font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 flex items-center gap-2"
+              >
+                <Plus className="w-6 h-6" />
+                <span>זיכרון חדש</span>
+                <Sparkles className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Filters */}
