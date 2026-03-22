@@ -63,11 +63,16 @@ export default function CreateEntryPage() {
   }
 
   async function generateWithAI() {
+    console.log('[Frontend] generateWithAI called');
+    console.log('[Frontend] aiEvent:', aiEvent);
+    
     if (!aiEvent.trim()) {
+      console.log('[Frontend] No event - setting error');
       setError('יש להזין מה קרה');
       return;
     }
 
+    console.log('[Frontend] Starting generation...');
     setAiGenerating(true);
     setError('');
 
@@ -76,23 +81,34 @@ export default function CreateEntryPage() {
         ? children.find(c => c.id === selectedChildren[0])?.name
         : undefined;
 
+      const requestBody = {
+        event: aiEvent,
+        location: location || undefined,
+        feeling: aiFeeling || undefined,
+        details: aiDetails || undefined,
+        childName: selectedChildName,
+      };
+
+      console.log('[Frontend] Request body:', requestBody);
+
       const res = await fetch('/api/ai/generate-story', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: aiEvent,
-          location: location || undefined,
-          feeling: aiFeeling || undefined,
-          details: aiDetails || undefined,
-          childName: selectedChildName,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
+      console.log('[Frontend] Response status:', res.status);
+
       const data = await res.json();
+      console.log('[Frontend] Response data:', data);
 
       if (!res.ok) {
+        console.log('[Frontend] Response not OK, throwing error');
         throw new Error(data.message || data.error || 'Failed to generate story');
       }
+
+      console.log('[Frontend] Story generated successfully!');
+      console.log('[Frontend] Story length:', data.story?.length);
 
       // Set the generated content
       setContent(data.story);
@@ -105,9 +121,14 @@ export default function CreateEntryPage() {
       setAiEvent('');
       setAiFeeling('');
       setAiDetails('');
+      
+      console.log('[Frontend] Switched to manual mode');
     } catch (err: any) {
+      console.error('[Frontend] Error in generateWithAI:', err);
+      console.error('[Frontend] Error message:', err.message);
       setError(err.message || 'משהו השתבש ביצירת הסיפור');
     } finally {
+      console.log('[Frontend] Setting aiGenerating to false');
       setAiGenerating(false);
     }
   }
