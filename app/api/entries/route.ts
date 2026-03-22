@@ -110,6 +110,95 @@ export async function GET(request: Request) {
   }
 }
 
+// POST /api/entries - Create new entry
+export async function POST(request: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { title, content, eventDate, category, location, familyId, childrenIds } = body;
+
+    // Validate required fields
+    if (!title || !content || !eventDate || !familyId) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Check user has access to this family
+    const membership = await prisma.familyMember.findFirst({
+      where: {
+        familyId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!membership) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
+    // Check permissions (VIEWER can't create)
+    if (membership.role === 'VIEWER') {
+      return NextResponse.json(
+        { error: 'Viewers cannot create entries' },
+        { status: 403 }
+      );
+    }
+
+    // Create entry
+    const entry = await prisma.entry.create({
+      data: {
+        title,
+        content,
+        eventDate: new Date(eventDate),
+        category: category || 'DAILY_LIFE',
+        location,
+        familyId,
+        authorId: session.user.id,
+        visibility: 'FAMILY_ONLY',
+        // Tag children if provided
+        ...(childrenIds && childrenIds.length > 0 && {
+          taggedChildren: {
+            create: childrenIds.map((childId: string) => ({
+              childId,
+            })),
+          },
+        }),
+      },
+      include: {
+        taggedChildren: {
+          include: {
+            child: true,
+          },
+        },
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      entry,
+      message: 'Entry created successfully!',
+    });
+  } catch (error) {
+    console.error('Error creating entry:', error);
+    return NextResponse.json(
+      { error: 'Failed to create entry' },
+      { status: 500 }
+    );
+  }
+}
+
 // Helper: Calculate age in months
 function calculateAgeInMonths(birthDate: Date, eventDate: Date): number {
   const birth = new Date(birthDate);
