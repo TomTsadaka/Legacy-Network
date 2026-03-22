@@ -41,3 +41,6 @@ prisma/migrations/**/*.sql
 
 .vercel
 .env*.local
+
+.vercel
+.env*.local
