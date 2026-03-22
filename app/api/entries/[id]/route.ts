@@ -5,7 +5,7 @@ import prisma from '@/lib/prisma';
 // GET /api/entries/[id] - Get single entry
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -13,12 +13,12 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const entry = await prisma.entry.findUnique({
       where: { id },
       include: {
-        children: {
+        taggedChildren: {
           include: {
             child: true,
           },
@@ -32,7 +32,7 @@ export async function GET(
     }
 
     // Calculate age at entry for each child
-    const enrichedChildren = entry.children.map((ec) => {
+    const enrichedChildren = entry.taggedChildren.map((ec) => {
       const child = ec.child;
       const eventDate = new Date(entry.eventDate);
       const birthDate = new Date(child.birthDate);
