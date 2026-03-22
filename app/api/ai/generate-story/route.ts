@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/request';
+import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 
 // POST /api/ai/generate-story - Generate memory story with AI
