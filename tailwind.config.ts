@@ -1,45 +1,61 @@
-import type { Config } from 'tailwindcss';
+import type { Config } from "tailwindcss";
 
-const config: Config = {
+export default {
   content: [
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       colors: {
-        primary: {
-          DEFAULT: '#5B8FB9',
-          50: '#e8f3f8',
-          100: '#d1e7f1',
-          200: '#a3cfe3',
-          300: '#75b7d5',
-          400: '#5B8FB9',
-          500: '#4a7a9e',
-          600: '#3a617d',
-          700: '#2b495d',
-          800: '#1b303e',
-          900: '#0c181f',
-        },
-        cream: {
-          DEFAULT: '#F5E6D3',
-          50: '#fffbf7',
-          100: '#fef7ef',
-          200: '#fcefd8',
-          300: '#F5E6D3',
-          400: '#edd8b8',
-          500: '#e5ca9d',
-        },
-        peach: '#FFB084',
+        background: "var(--background)",
+        foreground: "var(--foreground)",
       },
-      fontFamily: {
-        serif: ['Merriweather', 'serif'],
-        sans: ['Inter', 'sans-serif'],
+      animation: {
+        'blob': 'blob 7s infinite',
+        'float': 'float 3s ease-in-out infinite',
+        'wiggle': 'wiggle 1s ease-in-out infinite',
+        'fadeIn': 'fadeIn 0.5s ease-in',
+        'shake': 'shake 0.5s',
+      },
+      keyframes: {
+        blob: {
+          '0%': {
+            transform: 'translate(0px, 0px) scale(1)',
+          },
+          '33%': {
+            transform: 'translate(30px, -50px) scale(1.1)',
+          },
+          '66%': {
+            transform: 'translate(-20px, 20px) scale(0.9)',
+          },
+          '100%': {
+            transform: 'translate(0px, 0px) scale(1)',
+          },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-20px)' },
+        },
+        wiggle: {
+          '0%, 100%': { transform: 'rotate(-3deg)' },
+          '50%': { transform: 'rotate(3deg)' },
+        },
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        shake: {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-5px)' },
+          '20%, 40%, 60%, 80%': { transform: 'translateX(5px)' },
+        },
+      },
+      borderWidth: {
+        '3': '3px',
       },
     },
   },
   plugins: [],
-};
-
-export default config;
+} satisfies Config;

@@ -2,6 +2,7 @@
 
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
+import { Sparkles } from 'lucide-react';
 
 export default function SignInPage() {
   const [username, setUsername] = useState('');
@@ -22,45 +23,58 @@ export default function SignInPage() {
         callbackUrl: '/timeline',
       });
 
-      console.log('Sign in result:', result);
-
       if (result?.error) {
-        console.log('Error:', result.error);
         setError('שם משתמש או סיסמה שגויים');
       } else if (result?.ok) {
-        console.log('Success! Redirecting...');
         window.location.href = '/timeline';
       }
     } catch (error) {
-      console.error('Sign in error:', error);
       setError('משהו השתבש, נסה שוב');
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+        <div className="absolute top-40 right-20 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-20 left-40 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+      </div>
+
+      {/* Floating decorations */}
+      <div className="absolute top-10 left-10 text-6xl opacity-30 animate-float">⭐</div>
+      <div className="absolute top-20 right-20 text-6xl opacity-30 animate-float" style={{ animationDelay: '1s' }}>🎈</div>
+      <div className="absolute bottom-20 left-20 text-6xl opacity-30 animate-float" style={{ animationDelay: '2s' }}>🌟</div>
+      <div className="absolute bottom-10 right-10 text-6xl opacity-30 animate-float" style={{ animationDelay: '1.5s' }}>✨</div>
+
+      <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl max-w-md w-full p-10 relative z-10 border-4 border-purple-200">
         {/* Logo/Title */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <span className="text-6xl animate-bounce">🌈</span>
+            <Sparkles className="text-yellow-400 w-12 h-12 animate-pulse" />
+          </div>
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-3">
             Legacy Network
           </h1>
-          <p className="text-gray-600">הזיכרונות המשפחתיים שלך</p>
+          <p className="text-purple-600 font-bold text-xl">הזיכרונות הקסומים שלך ✨</p>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center">
+          <div className="mb-6 p-4 bg-red-100 border-3 border-red-300 rounded-2xl text-red-700 text-center font-bold animate-shake">
             {error}
           </div>
         )}
 
         {/* Sign In Form */}
-        <form onSubmit={handleSignIn}>
-          <div className="mb-4">
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+        <form onSubmit={handleSignIn} className="space-y-6">
+          <div>
+            <label htmlFor="username" className="block text-lg font-bold text-purple-700 mb-2 flex items-center gap-2">
+              <span className="text-2xl">👤</span>
               שם משתמש
             </label>
             <input
@@ -70,13 +84,14 @@ export default function SignInPage() {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="tom"
               required
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="input-playful text-lg"
               dir="ltr"
             />
           </div>
 
-          <div className="mb-6">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+          <div>
+            <label htmlFor="password" className="block text-lg font-bold text-purple-700 mb-2 flex items-center gap-2">
+              <span className="text-2xl">🔐</span>
               סיסמה
             </label>
             <input
@@ -86,7 +101,7 @@ export default function SignInPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="input-playful text-lg"
               dir="ltr"
             />
           </div>
@@ -94,16 +109,31 @@ export default function SignInPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-4 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            className="w-full btn-primary-playful text-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {isLoading ? 'מתחבר...' : 'התחבר'}
+            {isLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-6 w-6 border-3 border-white border-t-transparent"></div>
+                מתחבר...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-6 h-6" />
+                היכנס לעולם הקסמים!
+                <Sparkles className="w-6 h-6" />
+              </>
+            )}
           </button>
         </form>
 
         {/* Footer */}
-        <p className="text-center text-xs text-gray-500 mt-6">
-          אתר אישי למשפחת צדקה 💙
-        </p>
+        <div className="text-center mt-8">
+          <p className="text-purple-600 font-bold flex items-center justify-center gap-2">
+            <span className="text-2xl">💙</span>
+            אתר אישי למשפחת צדקה
+            <span className="text-2xl">💙</span>
+          </p>
+        </div>
       </div>
     </div>
   );

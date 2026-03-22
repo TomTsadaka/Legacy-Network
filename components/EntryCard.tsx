@@ -3,7 +3,7 @@
 import { Entry, Child, User } from '@prisma/client';
 import { formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
-import { Calendar, User as UserIcon, MapPin } from 'lucide-react';
+import { Calendar, MapPin, Sparkles } from 'lucide-react';
 
 interface EntryWithRelations extends Entry {
   children: (Child & { ageAtEntry?: string; ageMonths?: number })[];
@@ -16,41 +16,80 @@ interface EntryCardProps {
 }
 
 export default function EntryCard({ entry, onClick }: EntryCardProps) {
-  const categoryColors: Record<string, string> = {
-    MILESTONE: 'bg-purple-100 text-purple-800 border-purple-300',
-    DAILY_LIFE: 'bg-blue-100 text-blue-800 border-blue-300',
-    SPECIAL_EVENT: 'bg-pink-100 text-pink-800 border-pink-300',
-    HEALTH: 'bg-red-100 text-red-800 border-red-300',
-    EDUCATION: 'bg-green-100 text-green-800 border-green-300',
-    FAMILY: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-    TRAVEL: 'bg-indigo-100 text-indigo-800 border-indigo-300',
-    OTHER: 'bg-gray-100 text-gray-800 border-gray-300',
+  const categoryStyles: Record<string, { bg: string; border: string; text: string; emoji: string }> = {
+    MILESTONE: { 
+      bg: 'bg-gradient-to-br from-purple-100 to-pink-100', 
+      border: 'border-purple-300', 
+      text: 'text-purple-800',
+      emoji: '⭐'
+    },
+    DAILY_LIFE: { 
+      bg: 'bg-gradient-to-br from-yellow-100 to-orange-100', 
+      border: 'border-yellow-300', 
+      text: 'text-yellow-800',
+      emoji: '☀️'
+    },
+    SPECIAL_EVENT: { 
+      bg: 'bg-gradient-to-br from-pink-100 to-red-100', 
+      border: 'border-pink-300', 
+      text: 'text-pink-800',
+      emoji: '🎉'
+    },
+    HEALTH: { 
+      bg: 'bg-gradient-to-br from-green-100 to-teal-100', 
+      border: 'border-green-300', 
+      text: 'text-green-800',
+      emoji: '💊'
+    },
+    EDUCATION: { 
+      bg: 'bg-gradient-to-br from-blue-100 to-indigo-100', 
+      border: 'border-blue-300', 
+      text: 'text-blue-800',
+      emoji: '📚'
+    },
+    FAMILY: { 
+      bg: 'bg-gradient-to-br from-orange-100 to-yellow-100', 
+      border: 'border-orange-300', 
+      text: 'text-orange-800',
+      emoji: '👨‍👩‍👧‍👦'
+    },
+    TRAVEL: { 
+      bg: 'bg-gradient-to-br from-cyan-100 to-blue-100', 
+      border: 'border-cyan-300', 
+      text: 'text-cyan-800',
+      emoji: '✈️'
+    },
+    OTHER: { 
+      bg: 'bg-gradient-to-br from-gray-100 to-gray-200', 
+      border: 'border-gray-300', 
+      text: 'text-gray-800',
+      emoji: '🌈'
+    },
   };
 
-  const categoryLabels: Record<string, string> = {
-    MILESTONE: 'אבן דרך',
-    DAILY_LIFE: 'יומי',
-    SPECIAL_EVENT: 'אירוע מיוחד',
-    HEALTH: 'בריאות',
-    EDUCATION: 'חינוך',
-    FAMILY: 'משפחה',
-    TRAVEL: 'טיול',
-    OTHER: 'אחר',
-  };
+  const style = categoryStyles[entry.category] || categoryStyles.OTHER;
 
   return (
     <div
       onClick={onClick}
       className={`
-        bg-white rounded-lg border-2 shadow-sm p-6 
-        transition-all duration-200
-        ${onClick ? 'cursor-pointer hover:shadow-md hover:border-blue-300' : ''}
+        relative overflow-hidden
+        bg-white/90 backdrop-blur-sm rounded-3xl border-3 shadow-lg
+        transition-all duration-300 p-6
+        ${onClick ? 'cursor-pointer hover:shadow-2xl hover:scale-[1.02] hover:-translate-y-1' : ''}
+        border-l-8 ${style.border}
       `}
     >
+      {/* Decorative corner sparkle */}
+      <div className="absolute top-4 left-4 text-3xl opacity-30 animate-pulse">
+        {style.emoji}
+      </div>
+
       {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+      <div className="flex items-start justify-between mb-4 relative">
+        <div className="flex-1 pr-12">
+          <h3 className="text-2xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-yellow-500" />
             {entry.title}
           </h3>
           
@@ -60,12 +99,12 @@ export default function EntryCard({ entry, onClick }: EntryCardProps) {
               {entry.children.map((child) => (
                 <span
                   key={child.id}
-                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 border border-indigo-300"
+                  className="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r from-indigo-400 to-purple-400 text-white shadow-md hover:shadow-lg transition-all"
                 >
-                  {child.name}
+                  👶 {child.name}
                   {child.ageAtEntry && (
-                    <span className="mr-1 text-xs text-indigo-600">
-                      {' '}• {child.ageAtEntry}
+                    <span className="mr-2 text-xs opacity-90">
+                      • {child.ageAtEntry}
                     </span>
                   )}
                 </span>
@@ -77,25 +116,26 @@ export default function EntryCard({ entry, onClick }: EntryCardProps) {
         {/* Category badge */}
         <span
           className={`
-            px-3 py-1 rounded-full text-sm font-medium border
-            ${categoryColors[entry.category] || 'bg-gray-100 text-gray-800 border-gray-300'}
+            px-4 py-2 rounded-full text-sm font-bold border-2 shadow-md
+            ${style.bg} ${style.border} ${style.text}
+            flex items-center gap-2
           `}
         >
-          {categoryLabels[entry.category] || entry.category}
+          <span className="text-lg">{style.emoji}</span>
         </span>
       </div>
 
       {/* Content preview */}
-      <div className="text-gray-700 mb-4 line-clamp-3 whitespace-pre-wrap">
+      <div className="text-gray-700 mb-4 line-clamp-3 whitespace-pre-wrap leading-relaxed">
         {entry.content}
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between text-sm text-gray-500 pt-4 border-t">
+      <div className="flex items-center justify-between text-sm text-gray-600 pt-4 border-t-2 border-purple-100">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1">
-            <Calendar className="w-4 h-4" />
-            <span>
+          <div className="flex items-center gap-2 bg-purple-50 px-3 py-1 rounded-full">
+            <Calendar className="w-4 h-4 text-purple-600" />
+            <span className="font-medium text-purple-800">
               {new Date(entry.eventDate).toLocaleDateString('he-IL', {
                 year: 'numeric',
                 month: 'long',
@@ -105,21 +145,26 @@ export default function EntryCard({ entry, onClick }: EntryCardProps) {
           </div>
           
           {entry.location && (
-            <div className="flex items-center gap-1">
-              <MapPin className="w-4 h-4" />
-              <span>{entry.location}</span>
+            <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full">
+              <MapPin className="w-4 h-4 text-blue-600" />
+              <span className="font-medium text-blue-800">{entry.location}</span>
             </div>
           )}
         </div>
 
         {/* Time ago */}
-        <span className="text-xs">
+        <span className="text-xs text-gray-500 font-medium">
           נוסף {formatDistanceToNow(new Date(entry.createdAt), {
             addSuffix: true,
             locale: he,
           })}
         </span>
       </div>
+
+      {/* Hover effect overlay */}
+      {onClick && (
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-400/0 via-pink-400/0 to-blue-400/0 hover:from-purple-400/10 hover:via-pink-400/10 hover:to-blue-400/10 transition-all duration-300 pointer-events-none rounded-3xl"></div>
+      )}
     </div>
   );
 }

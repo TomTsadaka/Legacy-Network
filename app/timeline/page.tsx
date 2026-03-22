@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import EntryCard from '@/components/EntryCard';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Sparkles } from 'lucide-react';
 
 export default function TimelinePage() {
   const { data: session, status } = useSession();
@@ -20,7 +20,6 @@ export default function TimelinePage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Load family data
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/auth/signin');
@@ -32,7 +31,6 @@ export default function TimelinePage() {
     }
   }, [status]);
 
-  // Load entries when filters change
   useEffect(() => {
     if (family) {
       loadEntries();
@@ -48,7 +46,6 @@ export default function TimelinePage() {
         const primaryFamily = data.families[0];
         setFamily(primaryFamily);
         
-        // Load children
         const childrenRes = await fetch(`/api/children?familyId=${primaryFamily.id}`);
         const childrenData = await childrenRes.json();
         setChildren(childrenData.children || []);
@@ -84,10 +81,13 @@ export default function TimelinePage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">טוען זיכרונות...</p>
+          <div className="relative">
+            <div className="animate-spin rounded-full h-20 w-20 border-8 border-purple-200 border-t-purple-500 mx-auto mb-4"></div>
+            <Sparkles className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-yellow-400 animate-pulse" />
+          </div>
+          <p className="text-purple-700 font-bold text-lg">טוען זיכרונות קסומים...</p>
         </div>
       </div>
     );
@@ -95,51 +95,60 @@ export default function TimelinePage() {
 
   if (!family) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            שגיאה בטעינת משפחה
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="card-playful p-8 text-center max-w-md">
+          <div className="text-6xl mb-4 animate-bounce">🏠</div>
+          <h2 className="text-3xl font-bold text-purple-700 mb-4">
+            בוא נתחיל!
           </h2>
           <p className="text-gray-600 mb-6">
-            אנא צור קשר עם התמיכה
+            יש ליצור משפחה כדי להתחיל לשמור זיכרונות מדהימים
           </p>
+          <button
+            onClick={() => router.push('/families/create')}
+            className="btn-primary-playful"
+          >
+            צור משפחה חדשה ✨
+          </button>
         </div>
       </div>
     );
   }
 
   const categories = [
-    { value: 'MILESTONE', label: 'אבן דרך' },
-    { value: 'DAILY_LIFE', label: 'יומי' },
-    { value: 'SPECIAL_EVENT', label: 'אירוע מיוחד' },
-    { value: 'HEALTH', label: 'בריאות' },
-    { value: 'EDUCATION', label: 'חינוך' },
-    { value: 'FAMILY', label: 'משפחה' },
-    { value: 'TRAVEL', label: 'טיול' },
-    { value: 'OTHER', label: 'אחר' },
+    { value: 'MILESTONE', label: '⭐ אבן דרך', color: 'from-purple-400 to-pink-400' },
+    { value: 'DAILY_LIFE', label: '☀️ יומי', color: 'from-yellow-400 to-orange-400' },
+    { value: 'SPECIAL_EVENT', label: '🎉 אירוע מיוחד', color: 'from-pink-400 to-red-400' },
+    { value: 'HEALTH', label: '💊 בריאות', color: 'from-green-400 to-teal-400' },
+    { value: 'EDUCATION', label: '📚 חינוך', color: 'from-blue-400 to-indigo-400' },
+    { value: 'FAMILY', label: '👨‍👩‍👧‍👦 משפחה', color: 'from-orange-400 to-yellow-400' },
+    { value: 'TRAVEL', label: '✈️ טיול', color: 'from-cyan-400 to-blue-400' },
+    { value: 'OTHER', label: '🌈 אחר', color: 'from-gray-400 to-gray-500' },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-6">
+    <div className="min-h-screen pb-8">
+      {/* Header with gradient */}
+      <div className="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 shadow-xl sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 py-8">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                ציר הזמן
+              <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
+                <span className="animate-bounce">🌟</span>
+                ציר הזמן הקסום
               </h1>
-              <p className="text-gray-600 mt-1">
-                {family.name} • {entries.length} זיכרונות
+              <p className="text-white/90 font-medium text-lg">
+                {family.name} • {entries.length} זיכרונות מיוחדים ✨
               </p>
             </div>
             
             <button
               onClick={() => router.push('/entries/create')}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="bg-white text-purple-600 font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 flex items-center gap-2"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-6 h-6" />
               <span>זיכרון חדש</span>
+              <Sparkles className="w-5 h-5" />
             </button>
           </div>
 
@@ -147,13 +156,13 @@ export default function TimelinePage() {
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Search */}
             <div className="flex-1 relative">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-400" />
               <input
                 type="text"
-                placeholder="חיפוש..."
+                placeholder="חפש זיכרון קסום... 🔍"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pr-10 pl-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pr-10 pl-4 py-3 border-2 border-white/30 rounded-full bg-white/90 backdrop-blur-sm focus:ring-4 focus:ring-white/50 focus:border-white transition-all text-purple-900 placeholder-purple-400"
               />
             </div>
 
@@ -162,9 +171,9 @@ export default function TimelinePage() {
               <select
                 value={selectedChild}
                 onChange={(e) => setSelectedChild(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-4 py-3 border-2 border-white/30 rounded-full bg-white/90 backdrop-blur-sm focus:ring-4 focus:ring-white/50 transition-all text-purple-900 font-medium"
               >
-                <option value="">כל הילדים</option>
+                <option value="">👶 כל הילדים</option>
                 {children.map((child) => (
                   <option key={child.id} value={child.id}>
                     {child.name}
@@ -177,9 +186,9 @@ export default function TimelinePage() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-3 border-2 border-white/30 rounded-full bg-white/90 backdrop-blur-sm focus:ring-4 focus:ring-white/50 transition-all text-purple-900 font-medium"
             >
-              <option value="">כל הקטגוריות</option>
+              <option value="">🌈 כל הקטגוריות</option>
               {categories.map((cat) => (
                 <option key={cat.value} value={cat.value}>
                   {cat.label}
@@ -193,32 +202,46 @@ export default function TimelinePage() {
       {/* Timeline */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         {entries.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg mb-4">
+          <div className="text-center py-16">
+            <div className="text-8xl mb-6 animate-bounce">📖</div>
+            <p className="text-purple-600 font-bold text-2xl mb-4">
               {searchQuery || selectedChild || selectedCategory
-                ? 'לא נמצאו זיכרונות מתאימים'
-                : 'עדיין אין זיכרונות'}
+                ? 'לא נמצאו זיכרונות מתאימים 🔍'
+                : 'עדיין אין זיכרונות קסומים 🌟'}
             </p>
             {!searchQuery && !selectedChild && !selectedCategory && (
               <button
                 onClick={() => router.push('/entries/create')}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="btn-primary-playful mt-4"
               >
-                צור זיכרון ראשון
+                צור את הזיכרון הראשון! ✨
               </button>
             )}
           </div>
         ) : (
-          <div className="space-y-4">
-            {entries.map((entry) => (
-              <EntryCard
+          <div className="space-y-6">
+            {entries.map((entry, index) => (
+              <div
                 key={entry.id}
-                entry={entry}
-                onClick={() => router.push(`/entries/${entry.id}`)}
-              />
+                className="animate-fadeIn"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <EntryCard
+                  entry={entry}
+                  onClick={() => router.push(`/entries/${entry.id}`)}
+                />
+              </div>
             ))}
           </div>
         )}
+      </div>
+
+      {/* Floating decorations */}
+      <div className="fixed top-20 left-10 text-6xl opacity-20 animate-float pointer-events-none">
+        🎈
+      </div>
+      <div className="fixed bottom-20 right-10 text-6xl opacity-20 animate-float pointer-events-none" style={{ animationDelay: '1s' }}>
+        ⭐
       </div>
     </div>
   );
