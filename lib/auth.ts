@@ -16,67 +16,45 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     }),
     Credentials({
+      id: 'credentials',
       name: 'Credentials',
       credentials: {
-        username: { label: 'Username or Email', type: 'text' },
+        username: { label: 'Username', type: 'text' },
         password: { label: 'Password', type: 'password' }
       },
-      async authorize(credentials) {
-        try {
-          console.log('🔐 Authorize called with:', credentials?.username);
-          
-          if (!credentials?.username || !credentials?.password) {
-            console.log('❌ Missing credentials');
-            return null;
-          }
-
-          // Try to find user by username OR email
-          const user = await prisma.user.findFirst({
-            where: {
-              OR: [
-                { username: credentials.username as string },
-                { email: credentials.username as string }
-              ]
-            }
-          });
-
-          console.log('👤 User found:', !!user);
-          if (user) {
-            console.log('   - ID:', user.id);
-            console.log('   - Email:', user.email);
-            console.log('   - Username:', user.username);
-            console.log('   - Has password:', !!user.password);
-            console.log('   - Password length:', user.password?.length || 0);
-          }
-
-          if (!user || !user.password) {
-            console.log('❌ No user or no password');
-            return null;
-          }
-
-          const isPasswordValid = await bcrypt.compare(
-            credentials.password as string,
-            user.password
-          );
-
-          console.log('🔑 Password valid:', isPasswordValid);
-
-          if (!isPasswordValid) {
-            console.log('❌ Invalid password');
-            return null;
-          }
-
-          console.log('✅ Auth successful for:', user.email);
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            image: user.image,
-          };
-        } catch (error) {
-          console.error('💥 Auth error:', error);
-          return null;
+      authorize: async (credentials) => {
+        if (!credentials?.username || !credentials?.password) {
+          throw new Error('Missing username or password');
         }
+
+        const user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { username: credentials.username as string },
+              { email: credentials.username as string }
+            ]
+          }
+        });
+
+        if (!user?.password) {
+          throw new Error('User not found');
+        }
+
+        const isValid = await bcrypt.compare(
+          credentials.password as string,
+          user.password
+        );
+
+        if (!isValid) {
+          throw new Error('Invalid password');
+        }
+
+        return {
+          id: user.id,
+          email: user.email!,
+          name: user.name,
+          image: user.image,
+        };
       }
     }),
   ],
