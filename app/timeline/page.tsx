@@ -130,90 +130,93 @@ export default function TimelinePage() {
     <div className="min-h-screen pb-8">
       {/* Header with gradient */}
       <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-sky-500 shadow-xl">
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-                <span className="animate-bounce">🌟</span>
-                ציר הזמן הקסום
-              </h1>
-              <p className="text-white/90 font-medium text-lg">
-                {family.name} • {entries.length} זיכרונות מיוחדים ✨
-              </p>
-            </div>
-            
-            <div className="flex gap-3">
-              <button
-                onClick={() => router.push('/family/members')}
-                className="bg-white text-blue-600 font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 flex items-center gap-2"
-              >
-                <span className="text-2xl">👨‍👩‍👧‍👦</span>
-                <span>המשפחה</span>
-              </button>
-              <button
-                onClick={() => router.push('/entries/create')}
-                className="bg-white text-blue-600 font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 flex items-center gap-2"
-              >
-                <Plus className="w-6 h-6" />
-                <span>זיכרון חדש</span>
-                <Sparkles className="w-5 h-5" />
-              </button>
-            </div>
+        <div className="max-w-4xl mx-auto px-4 py-6 md:py-8">
+          {/* Title */}
+          <div className="mb-4">
+            <h1 className="text-2xl md:text-4xl font-bold text-white mb-2 flex items-center gap-2">
+              <span className="animate-bounce text-2xl md:text-3xl">🌟</span>
+              ציר הזמן הקסום
+            </h1>
+            <p className="text-white/90 font-medium text-sm md:text-lg">
+              {family.name} • {entries.length} זיכרונות מיוחדים ✨
+            </p>
           </div>
 
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          {/* Action Buttons - Responsive */}
+          <div className="flex gap-2 md:gap-3 mb-4">
+            <button
+              onClick={() => router.push('/family/members')}
+              className="flex-1 md:flex-none bg-white text-blue-600 font-bold px-4 md:px-6 py-2 md:py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 text-sm md:text-base"
+            >
+              <span className="text-xl md:text-2xl">👨‍👩‍👧‍👦</span>
+              <span className="hidden sm:inline">המשפחה</span>
+            </button>
+            <button
+              onClick={() => router.push('/entries/create')}
+              className="flex-1 md:flex-none bg-white text-blue-600 font-bold px-4 md:px-6 py-2 md:py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 text-sm md:text-base"
+            >
+              <Plus className="w-5 h-5 md:w-6 md:h-6" />
+              <span>זיכרון חדש</span>
+              <Sparkles className="w-4 h-4 md:w-5 md:h-5 hidden sm:inline" />
+            </button>
+          </div>
+
+          {/* Filters - Responsive */}
+          <div className="flex flex-col gap-2 md:gap-3">
             {/* Search */}
-            <div className="flex-1 relative">
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-400" />
+            <div className="relative">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-blue-400" />
               <input
                 type="text"
                 placeholder="חפש זיכרון קסום... 🔍"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pr-10 pl-4 py-3 border-2 border-white/30 rounded-full bg-white/90 backdrop-blur-sm focus:ring-4 focus:ring-white/50 focus:border-white transition-all text-purple-900 placeholder-purple-400"
+                className="w-full pr-10 pl-4 py-2 md:py-3 text-sm md:text-base border-2 border-white/30 rounded-full bg-white/90 backdrop-blur-sm focus:ring-4 focus:ring-white/50 focus:border-white transition-all text-blue-900 placeholder-blue-400"
               />
             </div>
 
-            {/* Child filter */}
-            {children.length > 0 && (
+            {/* Filters row */}
+            <div className="flex gap-2">
+              {/* Child filter */}
+              {children.length > 0 && (
+                <select
+                  value={selectedChild}
+                  onChange={(e) => setSelectedChild(e.target.value)}
+                  className="flex-1 px-3 md:px-4 py-2 md:py-3 text-sm md:text-base border-2 border-white/30 rounded-full bg-white/90 backdrop-blur-sm focus:ring-4 focus:ring-white/50 transition-all text-blue-900 font-medium"
+                >
+                  <option value="">👶 כל הילדים</option>
+                  {children.map((child) => (
+                    <option key={child.id} value={child.id}>
+                      {child.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {/* Category filter */}
               <select
-                value={selectedChild}
-                onChange={(e) => setSelectedChild(e.target.value)}
-                className="px-4 py-3 border-2 border-white/30 rounded-full bg-white/90 backdrop-blur-sm focus:ring-4 focus:ring-white/50 transition-all text-purple-900 font-medium"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="flex-1 px-3 md:px-4 py-2 md:py-3 text-sm md:text-base border-2 border-white/30 rounded-full bg-white/90 backdrop-blur-sm focus:ring-4 focus:ring-white/50 transition-all text-blue-900 font-medium"
               >
-                <option value="">👶 כל הילדים</option>
-                {children.map((child) => (
-                  <option key={child.id} value={child.id}>
-                    {child.name}
+                <option value="">🌈 קטגוריות</option>
+                {categories.map((cat) => (
+                  <option key={cat.value} value={cat.value}>
+                    {cat.label}
                   </option>
                 ))}
               </select>
-            )}
-
-            {/* Category filter */}
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-3 border-2 border-white/30 rounded-full bg-white/90 backdrop-blur-sm focus:ring-4 focus:ring-white/50 transition-all text-purple-900 font-medium"
-            >
-              <option value="">🌈 כל הקטגוריות</option>
-              {categories.map((cat) => (
-                <option key={cat.value} value={cat.value}>
-                  {cat.label}
-                </option>
-              ))}
-            </select>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Timeline */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-6 md:py-8">
         {entries.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="text-8xl mb-6 animate-bounce">📖</div>
-            <p className="text-purple-600 font-bold text-2xl mb-4">
+          <div className="text-center py-12 md:py-16">
+            <div className="text-6xl md:text-8xl mb-4 md:mb-6 animate-bounce">📖</div>
+            <p className="text-blue-600 font-bold text-xl md:text-2xl mb-4 px-4">
               {searchQuery || selectedChild || selectedCategory
                 ? 'לא נמצאו זיכרונות מתאימים 🔍'
                 : 'עדיין אין זיכרונות קסומים 🌟'}
@@ -228,7 +231,7 @@ export default function TimelinePage() {
             )}
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {entries.map((entry, index) => (
               <div
                 key={entry.id}

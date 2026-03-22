@@ -118,7 +118,7 @@ export default function CreateEntryPage() {
   ];
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen py-4 md:py-8">
       <div className="max-w-3xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
