@@ -159,7 +159,7 @@ export default function CreateEntryPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              placeholder="למשל: הצעד הראשון של נועה! 👣"
+              placeholder="למשל: הצעד הראשון של עילאי ורוי! 👣"
               className="input-playful text-lg"
             />
           </div>
