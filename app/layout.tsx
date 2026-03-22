@@ -28,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${merriweather.variable}`}>
+    <html lang="he" dir="rtl" className={`${inter.variable} ${merriweather.variable}`}>
       <body className="min-h-screen antialiased">
         <SessionProvider>
           {children}
