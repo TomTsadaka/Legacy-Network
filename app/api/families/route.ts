@@ -40,7 +40,7 @@ export async function GET() {
         },
         _count: {
           select: {
-            memories: true,
+            entries: true,
           },
         },
       },
