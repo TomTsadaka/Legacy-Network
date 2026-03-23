@@ -68,6 +68,13 @@ export async function GET(request: Request) {
               },
             },
           },
+          media: {
+            select: {
+              id: true,
+              url: true,
+              type: true,
+            },
+          },
           author: {
             select: {
               id: true,

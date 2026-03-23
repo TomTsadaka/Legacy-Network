@@ -1,26 +1,30 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Sparkles, ArrowRight, Save } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { ArrowRight, Save, Sparkles, Image as ImageIcon, Video, X, Upload } from 'lucide-react';
 
-export default function EditEntryPage() {
+export default function EntryEditPage() {
   const { id } = useParams();
-  const { data: session, status } = useSession();
   const router = useRouter();
+  const { data: session, status } = useSession();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
+  // Form data
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [eventDate, setEventDate] = useState('');
-  const [category, setCategory] = useState('DAILY_LIFE');
   const [location, setLocation] = useState('');
-  const [selectedChildren, setSelectedChildren] = useState<string[]>([]);
-  
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [children, setChildren] = useState<any[]>([]);
+  const [category, setCategory] = useState('DAILY_LIFE');
+  const [childrenIds, setChildrenIds] = useState<string[]>([]);
+  const [existingMedia, setExistingMedia] = useState<any[]>([]);
+  const [newMedia, setNewMedia] = useState<File[]>([]);
+
+  // Available children (for tagging)
+  const [availableChildren, setAvailableChildren] = useState<any[]>([]);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -28,51 +32,77 @@ export default function EditEntryPage() {
       return;
     }
 
-    if (status === 'authenticated') {
+    if (status === 'authenticated' && session?.user) {
       loadEntry();
+      loadChildren();
     }
   }, [status, id]);
 
   async function loadEntry() {
     try {
-      // Load entry
-      const entryRes = await fetch(`/api/entries/${id}`);
-      const entryData = await entryRes.json();
+      const res = await fetch(`/api/entries/${id}`);
+      const data = await res.json();
 
-      if (!entryRes.ok) {
-        throw new Error(entryData.error);
+      if (!res.ok) {
+        throw new Error(data.error);
       }
 
-      const entry = entryData.entry;
+      const entry = data.entry;
       setTitle(entry.title);
       setContent(entry.content);
       setEventDate(new Date(entry.eventDate).toISOString().split('T')[0]);
-      setCategory(entry.category);
       setLocation(entry.location || '');
-      
-      // Load children
-      const childrenRes = await fetch(`/api/children?familyId=${entry.family.id}`);
-      const childrenData = await childrenRes.json();
-      setChildren(childrenData.children || []);
-
-      // Set selected children
-      if (entry.children) {
-        setSelectedChildren(entry.children.map((c: any) => c.id));
-      }
+      setCategory(entry.category);
+      setChildrenIds(entry.children?.map((c: any) => c.id) || []);
+      setExistingMedia(entry.media || []);
     } catch (error) {
       console.error('Error loading entry:', error);
-      router.push(`/entries/${id}`);
+      alert('שגיאה בטעינת הזיכרון');
+      router.push('/timeline');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadChildren() {
+    try {
+      const res = await fetch('/api/children');
+      const data = await res.json();
+      if (res.ok) {
+        setAvailableChildren(data.children || []);
+      }
+    } catch (error) {
+      console.error('Error loading children:', error);
     }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-    setError('');
 
     try {
+      // 1. Upload new media files if any
+      let uploadedMediaUrls: any[] = [];
+      if (newMedia.length > 0) {
+        setUploading(true);
+        const formData = new FormData();
+        newMedia.forEach(file => formData.append('files', file));
+
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!uploadRes.ok) {
+          throw new Error('שגיאה בהעלאת קבצים');
+        }
+
+        const uploadData = await uploadRes.json();
+        uploadedMediaUrls = uploadData.files;
+        setUploading(false);
+      }
+
+      // 2. Update entry
       const res = await fetch(`/api/entries/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -80,164 +110,194 @@ export default function EditEntryPage() {
           title,
           content,
           eventDate,
+          location: location || null,
           category,
-          location: location || undefined,
-          childrenIds: selectedChildren,
+          childrenIds,
+          newMedia: uploadedMediaUrls,
         }),
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to update entry');
+        const data = await res.json();
+        throw new Error(data.error || 'שגיאה בשמירת השינויים');
       }
 
       router.push(`/entries/${id}`);
-    } catch (err: any) {
-      setError(err.message || 'משהו השתבש');
+    } catch (error: any) {
+      console.error('Error saving entry:', error);
+      alert(error.message || 'שגיאה בשמירת השינויים');
     } finally {
       setSaving(false);
+      setUploading(false);
     }
   }
 
-  function toggleChild(childId: string) {
-    setSelectedChildren((prev) =>
-      prev.includes(childId)
-        ? prev.filter((id) => id !== childId)
-        : [...prev, childId]
-    );
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || []);
+    setNewMedia(prev => [...prev, ...files]);
   }
+
+  function removeNewMedia(index: number) {
+    setNewMedia(prev => prev.filter((_, i) => i !== index));
+  }
+
+  async function removeExistingMedia(mediaId: string) {
+    if (!confirm('למחוק את התמונה/סרטון?')) return;
+
+    try {
+      const res = await fetch(`/api/media/${mediaId}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        throw new Error('שגיאה במחיקת המדיה');
+      }
+
+      setExistingMedia(prev => prev.filter(m => m.id !== mediaId));
+    } catch (error) {
+      console.error('Error deleting media:', error);
+      alert('שגיאה במחיקת המדיה');
+    }
+  }
+
+  const categories = [
+    { value: 'MILESTONE', label: 'אבן דרך', emoji: '⭐' },
+    { value: 'DAILY_LIFE', label: 'יומי', emoji: '☀️' },
+    { value: 'SPECIAL_EVENT', label: 'אירוע מיוחד', emoji: '🎉' },
+    { value: 'HEALTH', label: 'בריאות', emoji: '💊' },
+    { value: 'EDUCATION', label: 'חינוך', emoji: '📚' },
+    { value: 'FAMILY', label: 'משפחה', emoji: '👨‍👩‍👧‍👦' },
+    { value: 'TRAVEL', label: 'טיול', emoji: '✈️' },
+    { value: 'OTHER', label: 'אחר', emoji: '🌈' },
+  ];
 
   if (loading || status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="relative">
-            <div className="animate-spin rounded-full h-20 w-20 border-8 border-blue-200 border-t-blue-500 mx-auto mb-4"></div>
-            <Sparkles className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-blue-400 animate-pulse" />
-          </div>
+          <div className="animate-spin rounded-full h-20 w-20 border-8 border-blue-200 border-t-blue-500 mx-auto mb-4"></div>
           <p className="text-blue-700 font-bold text-lg">טוען...</p>
         </div>
       </div>
     );
   }
 
-  const categories = [
-    { value: 'MILESTONE', label: 'אבן דרך', emoji: '⭐', color: 'from-purple-400 to-pink-400' },
-    { value: 'DAILY_LIFE', label: 'יומי', emoji: '☀️', color: 'from-yellow-400 to-orange-400' },
-    { value: 'SPECIAL_EVENT', label: 'אירוע מיוחד', emoji: '🎉', color: 'from-pink-400 to-red-400' },
-    { value: 'HEALTH', label: 'בריאות', emoji: '💊', color: 'from-green-400 to-teal-400' },
-    { value: 'EDUCATION', label: 'חינוך', emoji: '📚', color: 'from-blue-400 to-indigo-400' },
-    { value: 'FAMILY', label: 'משפחה', emoji: '👨‍👩‍👧‍👦', color: 'from-orange-400 to-yellow-400' },
-    { value: 'TRAVEL', label: 'טיול', emoji: '✈️', color: 'from-cyan-400 to-blue-400' },
-    { value: 'OTHER', label: 'אחר', emoji: '🌈', color: 'from-gray-400 to-gray-500' },
-  ];
-
   return (
     <div className="min-h-screen py-4 md:py-8">
-      <div className="max-w-3xl mx-auto px-4">
+      <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
-        <div className="mb-6 md:mb-8">
+        <div className="flex items-center justify-between mb-6">
           <button
             onClick={() => router.push(`/entries/${id}`)}
-            className="text-blue-600 hover:text-blue-700 mb-4 flex items-center gap-2 font-bold transition-all hover:gap-3"
+            className="text-blue-600 hover:text-blue-700 flex items-center gap-2 font-bold"
           >
             <ArrowRight className="w-5 h-5" />
-            חזרה לזיכרון
+            ביטול
           </button>
-          <div className="flex items-center gap-3 mb-3">
-            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-cyan-600 to-sky-600 bg-clip-text text-transparent">
-              עריכת זיכרון
-            </h1>
-            <Sparkles className="w-8 h-8 text-yellow-400 animate-bounce" />
-          </div>
-          <p className="text-blue-600 font-medium text-base md:text-lg">ערוך את הזיכרון שלך ✏️</p>
+
+          <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+            <Sparkles className="w-6 h-6 md:w-8 h-8 text-yellow-500" />
+            ערוך זיכרון
+          </h1>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="card-playful p-4 md:p-8 space-y-4 md:space-y-6">
-          {/* Error */}
-          {error && (
-            <div className="p-4 bg-red-100 border-2 border-red-300 rounded-2xl text-red-700 font-medium text-sm md:text-base">
-              {error}
-            </div>
-          )}
-
+        <form onSubmit={handleSubmit} className="card-playful p-6 md:p-8 space-y-6">
           {/* Title */}
           <div>
-            <label htmlFor="title" className="block text-base md:text-lg font-bold text-blue-700 mb-2 md:mb-3 flex items-center gap-2">
-              <span className="text-xl md:text-2xl">✨</span>
-              כותרת הזיכרון *
+            <label className="block text-lg font-bold text-gray-700 mb-2">
+              כותרת הזיכרון
             </label>
             <input
-              id="title"
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={e => setTitle(e.target.value)}
               required
-              className="input-playful text-base md:text-lg"
+              className="input-playful w-full"
+              placeholder="תן כותרת מיוחדת לזיכרון..."
             />
           </div>
 
-          {/* Event Date */}
-          <div>
-            <label htmlFor="eventDate" className="block text-base md:text-lg font-bold text-blue-700 mb-2 md:mb-3 flex items-center gap-2">
-              <span className="text-xl md:text-2xl">📅</span>
-              תאריך האירוע *
-            </label>
-            <input
-              id="eventDate"
-              type="date"
-              value={eventDate}
-              onChange={(e) => setEventDate(e.target.value)}
-              required
-              className="input-playful text-base md:text-lg"
-            />
+          {/* Date & Location */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-lg font-bold text-gray-700 mb-2">
+                תאריך האירוע
+              </label>
+              <input
+                type="date"
+                value={eventDate}
+                onChange={e => setEventDate(e.target.value)}
+                required
+                className="input-playful w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-lg font-bold text-gray-700 mb-2">
+                מיקום (אופציונלי)
+              </label>
+              <input
+                type="text"
+                value={location}
+                onChange={e => setLocation(e.target.value)}
+                className="input-playful w-full"
+                placeholder="איפה זה קרה?"
+              />
+            </div>
           </div>
 
           {/* Category */}
           <div>
-            <label className="block text-base md:text-lg font-bold text-blue-700 mb-2 md:mb-3 flex items-center gap-2">
-              <span className="text-xl md:text-2xl">🏷️</span>
+            <label className="block text-lg font-bold text-gray-700 mb-3">
               קטגוריה
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3">
-              {categories.map((cat) => (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {categories.map(cat => (
                 <button
                   key={cat.value}
                   type="button"
                   onClick={() => setCategory(cat.value)}
-                  className={`p-3 md:p-4 rounded-2xl border-3 font-bold transition-all text-xs md:text-sm ${
-                    category === cat.value
-                      ? `bg-gradient-to-br ${cat.color} text-white shadow-lg scale-105`
-                      : 'bg-white border-blue-200 text-blue-700 hover:border-blue-400 hover:shadow-md'
-                  }`}
+                  className={`
+                    p-3 rounded-2xl border-2 font-bold text-sm transition-all
+                    ${category === cat.value
+                      ? 'border-blue-500 bg-blue-50 shadow-lg scale-105'
+                      : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                    }
+                  `}
                 >
-                  <div className="text-2xl md:text-3xl mb-1">{cat.emoji}</div>
-                  <div>{cat.label}</div>
+                  <span className="text-2xl block mb-1">{cat.emoji}</span>
+                  {cat.label}
                 </button>
               ))}
             </div>
           </div>
 
           {/* Children */}
-          {children.length > 0 && (
+          {availableChildren.length > 0 && (
             <div>
-              <label className="block text-base md:text-lg font-bold text-blue-700 mb-2 md:mb-3 flex items-center gap-2">
-                <span className="text-xl md:text-2xl">👶</span>
+              <label className="block text-lg font-bold text-gray-700 mb-3">
                 תייג ילדים
               </label>
-              <div className="flex flex-wrap gap-2 md:gap-3">
-                {children.map((child) => (
+              <div className="flex flex-wrap gap-2">
+                {availableChildren.map(child => (
                   <button
                     key={child.id}
                     type="button"
-                    onClick={() => toggleChild(child.id)}
-                    className={`px-4 md:px-6 py-2 md:py-3 rounded-full border-3 font-bold transition-all text-sm md:text-base ${
-                      selectedChildren.includes(child.id)
-                        ? 'bg-gradient-to-r from-blue-400 to-purple-400 border-blue-500 text-white shadow-lg scale-105'
-                        : 'bg-white border-blue-300 text-blue-700 hover:border-blue-500 hover:shadow-md'
-                    }`}
+                    onClick={() => {
+                      setChildrenIds(prev =>
+                        prev.includes(child.id)
+                          ? prev.filter(id => id !== child.id)
+                          : [...prev, child.id]
+                      );
+                    }}
+                    className={`
+                      px-4 py-2 rounded-full font-bold text-sm border-2 transition-all
+                      ${childrenIds.includes(child.id)
+                        ? 'bg-gradient-to-r from-purple-400 to-pink-400 text-white border-purple-300'
+                        : 'bg-white border-gray-300 text-gray-700 hover:border-purple-300'
+                      }
+                    `}
                   >
                     👶 {child.name}
                   </button>
@@ -246,54 +306,114 @@ export default function EditEntryPage() {
             </div>
           )}
 
-          {/* Location */}
+          {/* Content */}
           <div>
-            <label htmlFor="location" className="block text-base md:text-lg font-bold text-blue-700 mb-2 md:mb-3 flex items-center gap-2">
-              <span className="text-xl md:text-2xl">📍</span>
-              מיקום (אופציונלי)
+            <label className="block text-lg font-bold text-gray-700 mb-2">
+              תוכן הזיכרון
             </label>
-            <input
-              id="location"
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="למשל: פארק הירקון, תל אביב 🌳"
-              className="input-playful text-base md:text-lg"
+            <textarea
+              value={content}
+              onChange={e => setContent(e.target.value)}
+              required
+              rows={10}
+              className="input-playful w-full resize-none"
+              placeholder="ספר את הסיפור..."
             />
           </div>
 
-          {/* Content */}
+          {/* Media Upload */}
           <div>
-            <label htmlFor="content" className="block text-base md:text-lg font-bold text-blue-700 mb-2 md:mb-3 flex items-center gap-2">
-              <span className="text-xl md:text-2xl">📖</span>
-              ספר לנו על הרגע המיוחד *
+            <label className="block text-lg font-bold text-gray-700 mb-3">
+              תמונות וסרטונים
             </label>
-            <textarea
-              id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              required
-              rows={8}
-              className="input-playful text-base md:text-lg resize-none"
-            />
-            <div className="flex items-center justify-between mt-2">
-              <p className="text-xs md:text-sm text-blue-600 font-medium">
-                {content.length} תווים
-              </p>
-            </div>
+
+            {/* Existing Media */}
+            {existingMedia.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                {existingMedia.map(media => (
+                  <div key={media.id} className="relative group">
+                    {media.type === 'IMAGE' ? (
+                      <img
+                        src={media.url}
+                        alt=""
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                    ) : (
+                      <video
+                        src={media.url}
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeExistingMedia(media.id)}
+                      className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* New Media Preview */}
+            {newMedia.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                {newMedia.map((file, idx) => (
+                  <div key={idx} className="relative group">
+                    <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+                      {file.type.startsWith('image/') ? (
+                        <ImageIcon className="w-8 h-8 text-gray-400" />
+                      ) : (
+                        <Video className="w-8 h-8 text-gray-400" />
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeNewMedia(idx)}
+                      className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    <p className="text-xs text-gray-600 mt-1 truncate">{file.name}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Upload Button */}
+            <label className="btn-secondary-playful cursor-pointer inline-flex items-center gap-2">
+              <Upload className="w-5 h-5" />
+              העלה תמונות/סרטונים
+              <input
+                type="file"
+                multiple
+                accept="image/*,video/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+            </label>
           </div>
 
           {/* Submit */}
-          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-4">
+          <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={() => router.push(`/entries/${id}`)}
+              className="flex-1 btn-secondary-playful"
+              disabled={saving || uploading}
+            >
+              ביטול
+            </button>
             <button
               type="submit"
-              disabled={saving}
-              className="flex-1 btn-primary-playful text-base md:text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              disabled={saving || uploading}
+              className="flex-1 btn-primary-playful flex items-center justify-center gap-2"
             >
-              {saving ? (
+              {saving || uploading ? (
                 <>
-                  <div className="animate-spin rounded-full h-5 h-5 md:h-6 md:w-6 border-2 border-white border-t-transparent"></div>
-                  שומר...
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                  {uploading ? 'מעלה קבצים...' : 'שומר...'}
                 </>
               ) : (
                 <>
@@ -301,13 +421,6 @@ export default function EditEntryPage() {
                   שמור שינויים
                 </>
               )}
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push(`/entries/${id}`)}
-              className="btn-secondary-playful text-base md:text-lg"
-            >
-              ביטול
             </button>
           </div>
         </form>

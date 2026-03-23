@@ -226,6 +226,41 @@ export default function EntryViewPage() {
             </div>
           </div>
 
+          {/* Media Gallery */}
+          {entry.media && entry.media.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
+                📸 תמונות וסרטונים
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {entry.media.map((media: any) => (
+                  <div key={media.id} className="relative group">
+                    {media.type === 'IMAGE' ? (
+                      <a 
+                        href={media.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="block"
+                      >
+                        <img
+                          src={media.url}
+                          alt=""
+                          className="w-full h-48 object-cover rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer"
+                        />
+                      </a>
+                    ) : (
+                      <video
+                        src={media.url}
+                        controls
+                        className="w-full h-48 object-cover rounded-lg shadow-md"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Footer */}
           <div className="pt-6 border-t-2 border-blue-100 text-sm text-gray-500">
             נוסף {formatDistanceToNow(new Date(entry.createdAt), {

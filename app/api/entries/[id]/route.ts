@@ -54,6 +54,7 @@ export async function GET(
             child: true,
           },
         },
+        media: true,
         family: true,
       },
     });
@@ -127,7 +128,7 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { title, content, eventDate, location, category, childrenIds } = body;
+    const { title, content, eventDate, location, category, childrenIds, newMedia } = body;
 
     // Check if entry exists and user has permission
     const existingEntry = await prisma.entry.findUnique({
@@ -169,6 +170,21 @@ export async function PATCH(
           })),
         });
       }
+    }
+
+    // Add new media if provided
+    if (newMedia && newMedia.length > 0) {
+      await prisma.media.createMany({
+        data: newMedia.map((media: any) => ({
+          url: media.url,
+          type: media.type,
+          fileName: media.fileName,
+          fileSize: media.fileSize,
+          mimeType: media.mimeType,
+          entryId: id,
+          uploadedBy: session.user.id as string,
+        })),
+      });
     }
 
     return NextResponse.json({

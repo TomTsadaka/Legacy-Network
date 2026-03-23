@@ -5,9 +5,16 @@ import { formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { Calendar, MapPin, Sparkles } from 'lucide-react';
 
+interface Media {
+  id: string;
+  url: string;
+  type: 'IMAGE' | 'VIDEO';
+}
+
 interface EntryWithRelations extends Entry {
   children: (Child & { ageAtEntry?: string; ageMonths?: number })[];
   author: Pick<User, 'id' | 'name' | 'email'>;
+  media?: Media[];
 }
 
 interface EntryCardProps {
@@ -129,6 +136,36 @@ export default function EntryCard({ entry, onClick }: EntryCardProps) {
       <div className="text-gray-700 text-sm md:text-base mb-3 md:mb-4 line-clamp-3 whitespace-pre-wrap leading-relaxed">
         {entry.content}
       </div>
+
+      {/* Media preview */}
+      {entry.media && entry.media.length > 0 && (
+        <div className="mb-3 md:mb-4">
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {entry.media.slice(0, 4).map((media) => (
+              <div key={media.id} className="flex-shrink-0">
+                {media.type === 'IMAGE' ? (
+                  <img
+                    src={media.url}
+                    alt=""
+                    className="w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg shadow-sm"
+                  />
+                ) : (
+                  <div className="w-20 h-20 md:w-24 md:h-24 bg-gray-100 rounded-lg shadow-sm flex items-center justify-center">
+                    <span className="text-2xl">🎥</span>
+                  </div>
+                )}
+              </div>
+            ))}
+            {entry.media.length > 4 && (
+              <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg shadow-sm flex items-center justify-center flex-shrink-0">
+                <span className="text-sm font-bold text-purple-700">
+                  +{entry.media.length - 4}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs md:text-sm text-gray-600 pt-3 md:pt-4 border-t-2 border-blue-100">
