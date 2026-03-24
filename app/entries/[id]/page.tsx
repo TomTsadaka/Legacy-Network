@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { ArrowRight, Calendar, MapPin, Sparkles, Edit, Trash2, History, AlertTriangle } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { ArrowRight, Calendar, MapPin, Edit2, Trash2, History, X, AlertCircle } from 'lucide-react';
+import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 
 export default function EntryViewPage() {
@@ -70,13 +70,10 @@ export default function EntryViewPage() {
 
   if (loading || status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="relative">
-            <div className="animate-spin rounded-full h-20 w-20 border-8 border-blue-200 border-t-blue-500 mx-auto mb-4"></div>
-            <Sparkles className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-blue-400 animate-pulse" />
-          </div>
-          <p className="text-blue-700 font-bold text-lg">טוען זיכרון קסום...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
+          <p className="text-blue-700 font-semibold">טוען זיכרון...</p>
         </div>
       </div>
     );
@@ -85,17 +82,6 @@ export default function EntryViewPage() {
   if (!entry) {
     return null;
   }
-
-  const categoryStyles: any = {
-    MILESTONE: { emoji: '⭐', color: 'from-purple-400 to-pink-400', border: 'border-purple-300', text: 'text-purple-700' },
-    DAILY_LIFE: { emoji: '☀️', color: 'from-yellow-400 to-orange-400', border: 'border-yellow-300', text: 'text-yellow-700' },
-    SPECIAL_EVENT: { emoji: '🎉', color: 'from-pink-400 to-red-400', border: 'border-pink-300', text: 'text-pink-700' },
-    HEALTH: { emoji: '💊', color: 'from-green-400 to-teal-400', border: 'border-green-300', text: 'text-green-700' },
-    EDUCATION: { emoji: '📚', color: 'from-blue-400 to-indigo-400', border: 'border-blue-300', text: 'text-blue-700' },
-    FAMILY: { emoji: '👨‍👩‍👧‍👦', color: 'from-orange-400 to-yellow-400', border: 'border-orange-300', text: 'text-orange-700' },
-    TRAVEL: { emoji: '✈️', color: 'from-cyan-400 to-blue-400', border: 'border-cyan-300', text: 'text-cyan-700' },
-    OTHER: { emoji: '🌈', color: 'from-gray-400 to-gray-500', border: 'border-gray-300', text: 'text-gray-700' },
-  };
 
   const categoryLabels: any = {
     MILESTONE: 'אבן דרך',
@@ -108,217 +94,149 @@ export default function EntryViewPage() {
     OTHER: 'אחר',
   };
 
-  const style = categoryStyles[entry.category] || categoryStyles.OTHER;
-  const label = categoryLabels[entry.category] || 'אחר';
-
   return (
-    <div className="min-h-screen py-4 md:py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50 py-8" dir="rtl">
       <div className="max-w-4xl mx-auto px-4">
-        {/* Back button + Actions */}
-        <div className="flex items-center justify-between mb-6">
+        {/* Header */}
+        <div className="mb-6">
           <button
             onClick={() => router.push('/timeline')}
-            className="text-blue-600 hover:text-blue-700 flex items-center gap-2 font-bold transition-all hover:gap-3"
+            className="flex items-center gap-2 text-blue-700 hover:text-blue-900 font-semibold mb-6 transition-colors"
           >
             <ArrowRight className="w-5 h-5" />
             חזרה לציר הזמן
           </button>
-
-          {/* Action buttons */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => router.push(`/entries/${id}/history`)}
-              className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-white border-2 border-purple-300 text-purple-700 hover:bg-purple-50 font-bold transition-all text-sm md:text-base"
-            >
-              <History className="w-4 h-4" />
-              <span className="hidden md:inline">היסטוריה</span>
-            </button>
-            <button
-              onClick={() => router.push(`/entries/${id}/edit`)}
-              className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-white border-2 border-blue-300 text-blue-700 hover:bg-blue-50 font-bold transition-all text-sm md:text-base"
-            >
-              <Edit className="w-4 h-4" />
-              <span className="hidden md:inline">ערוך</span>
-            </button>
-            <button
-              onClick={() => setShowDeleteModal(true)}
-              className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-white border-2 border-red-300 text-red-700 hover:bg-red-50 font-bold transition-all text-sm md:text-base"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span className="hidden md:inline">מחק</span>
-            </button>
-          </div>
         </div>
 
-        {/* Entry Card */}
-        <div className={`card-playful p-6 md:p-8 border-r-8 ${style.border}`}>
-          {/* Decorative emoji */}
-          <div className="absolute top-4 left-4 text-4xl md:text-5xl opacity-30 animate-pulse">
-            {style.emoji}
-          </div>
-
-          {/* Header */}
-          <div className="mb-6">
-            <div className="flex items-start justify-between mb-4">
-              <h1 className="text-2xl md:text-4xl font-bold text-gray-900 flex items-center gap-3 flex-1 pr-12">
-                <Sparkles className="w-6 h-6 md:w-8 md:h-8 text-yellow-500 flex-shrink-0" />
-                {entry.title}
-              </h1>
-
-              {/* Category badge */}
-              <span
-                className={`
-                  px-4 py-2 rounded-full text-sm font-bold border-2 shadow-md flex-shrink-0
-                  bg-gradient-to-br ${style.color} ${style.border} text-white
-                  flex items-center gap-2
-                `}
-              >
-                <span className="text-lg">{style.emoji}</span>
-                <span className="hidden md:inline">{label}</span>
-              </span>
-            </div>
-
-            {/* Children tags */}
-            {entry.children && entry.children.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4">
-                {entry.children.map((child: any) => (
-                  <span
-                    key={child.id}
-                    className="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r from-indigo-400 to-purple-400 text-white shadow-md"
-                  >
-                    👶 {child.name}
-                    {child.ageAtEntry && (
-                      <span className="mr-2 text-xs opacity-90">
-                        • {child.ageAtEntry}
-                      </span>
-                    )}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Date & Location */}
-            <div className="flex flex-wrap items-center gap-3 text-sm md:text-base">
-              <div className="flex items-center gap-2 bg-blue-50 px-3 py-2 rounded-full">
-                <Calendar className="w-4 h-4 text-blue-600" />
-                <span className="font-medium text-blue-800">
-                  {new Date(entry.eventDate).toLocaleDateString('he-IL', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </span>
-              </div>
-
-              {entry.location && (
-                <div className="flex items-center gap-2 bg-cyan-50 px-3 py-2 rounded-full">
-                  <MapPin className="w-4 h-4 text-cyan-600" />
-                  <span className="font-medium text-cyan-800">{entry.location}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="prose prose-lg max-w-none mb-6">
-            <div className="text-gray-800 whitespace-pre-wrap leading-relaxed text-base md:text-lg">
-              {entry.content}
-            </div>
-          </div>
-
-          {/* Media Gallery */}
-          {entry.media && entry.media.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
-                📸 תמונות וסרטונים
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {entry.media.map((media: any) => (
-                  <div key={media.id} className="relative group">
-                    {media.type === 'IMAGE' ? (
-                      <a 
-                        href={media.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="block"
-                      >
-                        <img
-                          src={media.url}
-                          alt=""
-                          className="w-full h-48 object-cover rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer"
-                        />
-                      </a>
-                    ) : (
-                      <video
-                        src={media.url}
-                        controls
-                        className="w-full h-48 object-cover rounded-lg shadow-md"
-                      />
-                    )}
+        {/* Main Card */}
+        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-blue-100">
+          {/* Header Section */}
+          <div className="bg-gradient-to-r from-blue-600 via-sky-600 to-cyan-600 px-8 py-6 text-white">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold mb-3 leading-tight">{entry.title}</h1>
+                
+                {/* Metadata */}
+                <div className="flex flex-wrap gap-4 text-blue-100">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span className="text-sm font-medium">
+                      {format(new Date(entry.eventDate), 'dd MMMM yyyy', { locale: he })}
+                    </span>
                   </div>
-                ))}
+                  
+                  {entry.location && (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      <span className="text-sm font-medium">{entry.location}</span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <div className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold">
+                      {categoryLabels[entry.category]}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tagged Children */}
+                {entry.taggedChildren && entry.taggedChildren.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {entry.taggedChildren.map((tc: any) => (
+                      <span
+                        key={tc.child.id}
+                        className="px-3 py-1 bg-white/30 backdrop-blur-sm rounded-full text-sm font-medium"
+                      >
+                        👶 {tc.child.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
-          )}
+          </div>
 
-          {/* Footer */}
-          <div className="pt-6 border-t-2 border-blue-100 text-sm text-gray-500">
-            נוסף {formatDistanceToNow(new Date(entry.createdAt), {
-              addSuffix: true,
-              locale: he,
-            })}
+          {/* Content Section */}
+          <div className="px-8 py-8">
+            <div className="prose prose-lg max-w-none">
+              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap text-lg">
+                {entry.content}
+              </p>
+            </div>
+          </div>
+
+          {/* Footer - Actions */}
+          <div className="px-8 py-6 bg-gray-50 border-t border-gray-200">
+            <div className="flex flex-wrap gap-3 justify-between items-center">
+              <div className="text-sm text-gray-500">
+                נוצר ב-{format(new Date(entry.createdAt), 'dd/MM/yyyy HH:mm', { locale: he })}
+              </div>
+
+              <div className="flex gap-3">
+                {/* History Button */}
+                <button
+                  onClick={() => router.push(`/entries/${id}/history`)}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors font-medium"
+                >
+                  <History className="w-4 h-4" />
+                  היסטוריה
+                </button>
+
+                {/* Edit Button */}
+                <button
+                  onClick={() => router.push(`/entries/${id}/edit`)}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium shadow-md"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  ערוך
+                </button>
+
+                {/* Delete Button */}
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium shadow-md"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  מחק
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Floating decorations */}
-      <div className="fixed top-1/4 left-10 text-6xl opacity-20 animate-float pointer-events-none hidden md:block">
-        🎈
-      </div>
-      <div className="fixed bottom-1/4 right-10 text-6xl opacity-20 animate-float pointer-events-none hidden md:block" style={{ animationDelay: '1.5s' }}>
-        ⭐
       </div>
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl animate-fadeIn">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertTriangle className="w-8 h-8 text-red-600" />
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <AlertCircle className="w-6 h-6 text-red-600" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                למחוק את הזיכרון?
-              </h3>
-              <p className="text-gray-600">
-                פעולה זו תמחק את הזיכרון לצמיתות, כולל את כל ההיסטוריה שלו. לא ניתן לשחזר!
-              </p>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  למחוק זיכרון?
+                </h3>
+                <p className="text-gray-600">
+                  האם אתה בטוח שברצונך למחוק את הזיכרון "{entry.title}"? פעולה זו לא ניתנת לביטול.
+                </p>
+              </div>
             </div>
 
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                disabled={deleting}
-                className="flex-1 px-6 py-3 rounded-full border-2 border-gray-300 text-gray-700 font-bold hover:bg-gray-50 transition-all disabled:opacity-50"
-              >
-                ביטול
-              </button>
+            <div className="flex gap-3 mt-6">
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                className="flex-1 px-6 py-3 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white font-bold hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-50"
               >
-                {deleting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                    מוחק...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="w-5 h-5" />
-                    מחק לצמיתות
-                  </>
-                )}
+                {deleting ? 'מוחק...' : 'כן, מחק'}
+              </button>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 rounded-lg transition-colors"
+              >
+                ביטול
               </button>
             </div>
           </div>

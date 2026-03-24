@@ -1,6 +1,3 @@
-// Legacy Network - Prisma Schema
-// Multi-tenant family memories platform
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,41 +7,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================
-// USER & AUTHENTICATION MODELS
-// ============================================
-
 model User {
-  id            String          @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String?
-  email         String          @unique
+  email         String         @unique
   emailVerified DateTime?
   image         String?
-  username      String?         @unique // For demo/admin login
-  password      String?         // Hashed password for demo/admin users
-  role          UserRole        @default(USER)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-
-  // Relations
-  accounts       Account[]
-  sessions       Session[]
-  families       FamilyMember[]  // User can belong to multiple families
-  entries        Entry[]         @relation("EntryAuthor") // Entries authored by this user
-  media          Media[]         // Media uploaded by this user
-  likes          Like[]
-  comments       Comment[]
-  entryVersions  EntryVersion[]  // Version edits by this user
+  username      String?        @unique
+  password      String?
+  role          UserRole       @default(USER)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  accounts      Account[]
+  comments      Comment[]
+  entries       Entry[]        @relation("EntryAuthor")
+  entryVersions EntryVersion[]
+  families      FamilyMember[]
+  likes         Like[]
+  media         Media[]
+  sessions      Session[]
 
   @@map("users")
 }
 
-enum UserRole {
-  SUPER_ADMIN // Full system access
-  USER        // Regular user
-}
-
-// NextAuth.js models
 model Account {
   userId            String
   type              String
@@ -57,11 +42,9 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([provider, providerAccountId])
   @@map("accounts")
@@ -71,10 +54,9 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@map("sessions")
 }
@@ -88,70 +70,163 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
-// ============================================
-// FAMILY & MULTI-TENANT MODELS
-// ============================================
-
 model Family {
-  id        String   @id @default(cuid())
-  name      String   // e.g., "The Smith Family"
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  members  FamilyMember[]
-  children Child[]
-  entries  Entry[]
+  id        String         @id @default(cuid())
+  name      String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  children  Child[]
+  entries   Entry[]
+  members   FamilyMember[]
 
   @@map("families")
 }
 
-// Junction table: User <-> Family (Many-to-Many with role)
 model FamilyMember {
-  id       String @id @default(cuid())
-  userId   String
-  familyId String
-  role     FamilyRole @default(MEMBER)
-
-  createdAt DateTime @default(now())
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  id        String     @id @default(cuid())
+  userId    String
+  familyId  String
+  role      FamilyRole @default(MEMBER)
+  createdAt DateTime   @default(now())
+  family    Family     @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, familyId])
   @@index([familyId])
   @@map("family_members")
 }
 
-enum FamilyRole {
-  OWNER   // Created the family - full access
-  PARTNER // Invited spouse/partner - full access
-  MEMBER  // Family member - can create entries
-  VIEWER  // Read-only access
-}
-
-// ============================================
-// CHILDREN MODEL
-// ============================================
-
 model Child {
-  id        String   @id @default(cuid())
-  name      String
-  birthDate DateTime
-  gender    Gender?
-  image     String?  // Profile photo URL
-  familyId  String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
+  id            String       @id @default(cuid())
+  name          String
+  birthDate     DateTime
+  gender        Gender?
+  image         String?
+  familyId      String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
   family        Family       @relation(fields: [familyId], references: [id], onDelete: Cascade)
-  taggedEntries EntryChild[] // Entries where this child is tagged
+  taggedEntries EntryChild[]
 
   @@index([familyId])
-  @@index([birthDate]) // For birthday queries
+  @@index([birthDate])
   @@map("children")
+}
+
+model Entry {
+  id             String         @id @default(cuid())
+  title          String
+  content        String
+  eventDate      DateTime
+  location       String?
+  category       Category       @default(DAILY_LIFE)
+  visibility     Visibility     @default(FAMILY_ONLY)
+  authorId       String
+  familyId       String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  comments       Comment[]
+  author         User           @relation("EntryAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  family         Family         @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  taggedChildren EntryChild[]
+  versions       EntryVersion[]
+  likes          Like[]
+  media          Media[]
+
+  @@index([familyId])
+  @@index([authorId])
+  @@index([eventDate])
+  @@index([category])
+  @@map("entries")
+}
+
+model EntryChild {
+  id      String @id @default(cuid())
+  entryId String
+  childId String
+  child   Child  @relation(fields: [childId], references: [id], onDelete: Cascade)
+  entry   Entry  @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, childId])
+  @@index([childId])
+  @@map("entry_children")
+}
+
+model EntryVersion {
+  id        String   @id @default(cuid())
+  entryId   String
+  version   Int
+  title     String
+  content   String
+  eventDate DateTime
+  location  String?
+  editedBy  String
+  editedAt  DateTime @default(now())
+  category  Category
+  editor    User     @relation(fields: [editedBy], references: [id])
+  entry     Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, version])
+  @@index([entryId])
+  @@index([editedAt])
+  @@map("entry_versions")
+}
+
+model Media {
+  id         String    @id @default(cuid())
+  url        String
+  type       MediaType
+  fileName   String?
+  fileSize   Int?
+  mimeType   String?
+  entryId    String
+  uploadedBy String
+  createdAt  DateTime  @default(now())
+  entry      Entry     @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  uploader   User      @relation(fields: [uploadedBy], references: [id])
+
+  @@index([entryId])
+  @@index([uploadedBy])
+  @@map("media")
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  entryId   String
+  createdAt DateTime @default(now())
+  entry     Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, entryId])
+  @@index([entryId])
+  @@map("likes")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  entryId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  entry     Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([entryId])
+  @@map("comments")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  USER
+}
+
+enum FamilyRole {
+  OWNER
+  PARTNER
+  MEMBER
+  VIEWER
 }
 
 enum Gender {
@@ -160,161 +235,24 @@ enum Gender {
   OTHER
 }
 
-// ============================================
-// ENTRY (MEMORY) MODELS
-// ============================================
-
-model Entry {
-  id          String     @id @default(cuid())
-  title       String
-  content     String     @db.Text // Markdown content
-  eventDate   DateTime   // When the memory happened
-  location    String?
-  category    Category   @default(DAILY_LIFE)
-  visibility  Visibility @default(FAMILY_ONLY)
-
-  authorId String
-  familyId String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  author         User           @relation("EntryAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  family         Family         @relation(fields: [familyId], references: [id], onDelete: Cascade)
-  taggedChildren EntryChild[]   // Children tagged in this entry
-  media          Media[]        // Images & videos attached to this entry
-  likes          Like[]
-  comments       Comment[]
-  versions       EntryVersion[] // Version history
-
-  @@index([familyId])
-  @@index([authorId])
-  @@index([eventDate]) // For timeline queries
-  @@index([category])
-  @@map("entries")
-}
-
-// Many-to-Many: Entry <-> Child
-model EntryChild {
-  id      String @id @default(cuid())
-  entryId String
-  childId String
-
-  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
-  child Child @relation(fields: [childId], references: [id], onDelete: Cascade)
-
-  @@unique([entryId, childId])
-  @@index([childId])
-  @@map("entry_children")
-}
-
-// Entry Version History - Track all changes
-model EntryVersion {
-  id        String   @id @default(cuid())
-  entryId   String
-  version   Int      // Sequential version number
-  
-  // Snapshot of entry at this version
-  title     String
-  content   String   @db.Text
-  eventDate DateTime
-  location  String?
-  category  Category
-  
-  // Who made this change
-  editedBy  String
-  editedAt  DateTime @default(now())
-  
-  // Relations
-  entry     Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
-  editor    User     @relation(fields: [editedBy], references: [id])
-
-  @@unique([entryId, version])
-  @@index([entryId])
-  @@index([editedAt])
-  @@map("entry_versions")
-}
-
 enum Category {
-  MILESTONE     // First steps, first words, etc.
-  DAILY_LIFE    // Regular activities
-  SPECIAL_EVENT // Birthdays, holidays
-  HEALTH        // Doctor visits, illnesses
-  EDUCATION     // School, learning
-  FAMILY        // Family gatherings
-  TRAVEL        // Trips, vacations
+  MILESTONE
+  DAILY_LIFE
+  SPECIAL_EVENT
+  HEALTH
+  EDUCATION
+  FAMILY
+  TRAVEL
   OTHER
 }
 
 enum Visibility {
-  PRIVATE      // Only author can see
-  FAMILY_ONLY  // All family members can see
-  PUBLIC       // Can be shared publicly (future feature)
-}
-
-// ============================================
-// MEDIA MODEL (Images & Videos)
-// ============================================
-
-model Media {
-  id       String    @id @default(cuid())
-  url      String    // Full URL to media file
-  type     MediaType // IMAGE or VIDEO
-  fileName String?   // Original filename
-  fileSize Int?      // Size in bytes
-  mimeType String?   // e.g., "image/jpeg", "video/mp4"
-  
-  entryId  String
-  uploadedBy String
-  
-  createdAt DateTime @default(now())
-  
-  // Relations
-  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
-  uploader User @relation(fields: [uploadedBy], references: [id])
-  
-  @@index([entryId])
-  @@index([uploadedBy])
-  @@map("media")
+  PRIVATE
+  FAMILY_ONLY
+  PUBLIC
 }
 
 enum MediaType {
   IMAGE
   VIDEO
-}
-
-// ============================================
-// ENGAGEMENT MODELS (Optional)
-// ============================================
-
-model Like {
-  id      String @id @default(cuid())
-  userId  String
-  entryId String
-
-  createdAt DateTime @default(now())
-
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, entryId])
-  @@index([entryId])
-  @@map("likes")
-}
-
-model Comment {
-  id      String @id @default(cuid())
-  content String @db.Text
-  userId  String
-  entryId String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
-
-  @@index([entryId])
-  @@map("comments")
 }

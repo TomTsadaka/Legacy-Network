@@ -116,14 +116,14 @@ export default function TimelinePage() {
   }
 
   const categories = [
-    { value: 'MILESTONE', label: '⭐ אבן דרך', color: 'from-purple-400 to-pink-400' },
-    { value: 'DAILY_LIFE', label: '☀️ יומי', color: 'from-yellow-400 to-orange-400' },
-    { value: 'SPECIAL_EVENT', label: '🎉 אירוע מיוחד', color: 'from-pink-400 to-red-400' },
-    { value: 'HEALTH', label: '💊 בריאות', color: 'from-green-400 to-teal-400' },
-    { value: 'EDUCATION', label: '📚 חינוך', color: 'from-blue-400 to-indigo-400' },
-    { value: 'FAMILY', label: '👨‍👩‍👧‍👦 משפחה', color: 'from-orange-400 to-yellow-400' },
-    { value: 'TRAVEL', label: '✈️ טיול', color: 'from-cyan-400 to-blue-400' },
-    { value: 'OTHER', label: '🌈 אחר', color: 'from-gray-400 to-gray-500' },
+    { value: 'MILESTONE', label: '⭐ אבן דרך', color: 'from-blue-400 to-indigo-500' },
+    { value: 'DAILY_LIFE', label: '☀️ יומי', color: 'from-sky-400 to-blue-400' },
+    { value: 'SPECIAL_EVENT', label: '🎉 אירוע מיוחד', color: 'from-cyan-400 to-blue-500' },
+    { value: 'HEALTH', label: '💊 בריאות', color: 'from-teal-400 to-cyan-500' },
+    { value: 'EDUCATION', label: '📚 חינוך', color: 'from-blue-500 to-indigo-600' },
+    { value: 'FAMILY', label: '👨‍👩‍👧‍👦 משפחה', color: 'from-indigo-400 to-blue-500' },
+    { value: 'TRAVEL', label: '✈️ טיול', color: 'from-cyan-500 to-sky-500' },
+    { value: 'OTHER', label: '🌈 אחר', color: 'from-slate-400 to-blue-400' },
   ];
 
   return (
