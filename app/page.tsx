@@ -26,7 +26,7 @@ export default function HomePage() {
               להתחיל
             </Link>
             <Link 
-              href="/dashboard" 
+              href="/timeline" 
               className="btn-secondary text-lg px-8 py-3 inline-block"
             >
               כניסה
