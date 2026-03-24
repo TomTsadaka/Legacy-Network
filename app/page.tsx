@@ -2,20 +2,20 @@ import Link from 'next/link';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-amber-100">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-amber-100" dir="rtl">
       <div className="container mx-auto px-4 py-16 sm:py-24">
         <div className="max-w-6xl mx-auto">
           {/* Hero Section */}
           <div className="text-center mb-20">
             <h1 className="text-5xl sm:text-7xl font-serif font-bold text-amber-900 mb-6 leading-tight">
-              Legacy Network
+              רשת המורשת
             </h1>
             <p className="text-2xl sm:text-3xl text-gray-800 mb-4 font-light">
-              Capture, cherish, and share your family's precious moments
+              לתעד, לשמר ולשתף את הרגעים היקרים של המשפחה
             </p>
             <p className="text-lg sm:text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
-              A private digital journal where parents document their children's growth,
-              milestone moments, and everyday magic.
+              יומן דיגיטלי פרטי שבו הורים מתעדים את צמיחת ילדיהם,
+              רגעי ציון דרך והקסם היומיומי של החיים המשפחתיים.
             </p>
 
             {/* CTA Buttons */}
@@ -24,13 +24,13 @@ export default function HomePage() {
                 href="/auth/signin" 
                 className="bg-amber-800 hover:bg-amber-900 text-white font-semibold text-lg px-10 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
               >
-                Get Started
+                להתחיל
               </Link>
               <Link 
                 href="/dashboard" 
                 className="bg-white hover:bg-gray-50 text-amber-900 font-semibold text-lg px-10 py-4 rounded-xl border-2 border-amber-800 shadow-md hover:shadow-lg transition-all"
               >
-                Sign In
+                כניסה
               </Link>
             </div>
           </div>
@@ -38,28 +38,28 @@ export default function HomePage() {
           {/* Features */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             <FeatureCard 
-              title="📸 Capture Memories"
-              description="Document every milestone, from first steps to first day of school"
+              title="📸 לתעד זיכרונות"
+              description="תיעוד כל אבן דרך, מהצעדים הראשונים ועד ליום הראשון בבית הספר"
             />
             <FeatureCard 
-              title="📅 Timeline of Growth"
-              description="See your children's journey through time with automatic age tracking"
+              title="📅 ציר זמן של צמיחה"
+              description="עקבו אחר מסע החיים של ילדיכם עם מעקב אוטומטי אחר הגיל"
             />
             <FeatureCard 
-              title="🔒 Private & Secure"
-              description="Your family's memories are safe with enterprise-grade security"
+              title="🔒 פרטי ומאובטח"
+              description="זיכרונות המשפחה שלכם מוגנים ברמת אבטחה ארגונית"
             />
             <FeatureCard 
-              title="👨‍👩‍👧‍👦 Multi-Parent Access"
-              description="Invite partners and family members to contribute and view memories"
+              title="👨‍👩‍👧‍👦 גישה משותפת"
+              description="הזמינו בני זוג ובני משפחה לתרום ולצפות בזיכרונות"
             />
             <FeatureCard 
-              title="🏷️ Smart Organization"
-              description="Filter by child, category, or date to find memories instantly"
+              title="🏷️ ארגון חכם"
+              description="סינון לפי ילד, קטגוריה או תאריך למציאת זיכרונות מיידית"
             />
             <FeatureCard 
-              title="💝 Legacy Building"
-              description="Create a priceless gift your children will treasure forever"
+              title="💝 בניית מורשת"
+              description="צרו מתנה יקרת ערך שילדיכם ישמרו לנצח"
             />
           </div>
         </div>
