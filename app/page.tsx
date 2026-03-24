@@ -136,7 +136,7 @@ function FeatureCard({
   color: string;
 }) {
   return (
-    <div className="bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-6 shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 border border-blue-100">
+    <div className="bg-gradient-to-br from-white to-blue-50/50 rounded-2xl p-6 shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 border border-blue-100 text-center">
       <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${color} text-white mb-4`}>
         {icon}
       </div>
