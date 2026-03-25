@@ -2,37 +2,6 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
-async function createVersion(entryId: string, userId: string) {
-  // Get current entry state
-  const entry = await prisma.entry.findUnique({
-    where: { id: entryId },
-  });
-
-  if (!entry) return;
-
-  // Get latest version number
-  const latestVersion = await prisma.entryVersion.findFirst({
-    where: { entryId },
-    orderBy: { version: 'desc' },
-  });
-
-  const nextVersion = (latestVersion?.version || 0) + 1;
-
-  // Create version snapshot
-  await prisma.entryVersion.create({
-    data: {
-      entryId,
-      version: nextVersion,
-      title: entry.title,
-      content: entry.content,
-      eventDate: entry.eventDate,
-      location: entry.location,
-      category: entry.category,
-      editedBy: userId,
-    },
-  });
-}
-
 // GET /api/entries/[id] - Get single entry
 export async function GET(
   request: Request,
@@ -139,9 +108,6 @@ export async function PATCH(
       return NextResponse.json({ error: 'Entry not found' }, { status: 404 });
     }
 
-    // Create version snapshot before updating
-    await createVersion(id, session.user.id as string);
-
     // Update entry
     const updatedEntry = await prisma.entry.update({
       where: { id },
@@ -200,7 +166,7 @@ export async function PATCH(
   }
 }
 
-// DELETE /api/entries/[id] - Delete entry
+// DELETE /api/entries/[id] - Soft delete entry
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -222,14 +188,18 @@ export async function DELETE(
       return NextResponse.json({ error: 'Entry not found' }, { status: 404 });
     }
 
-    // Delete entry (cascade will delete versions, tags, etc.)
-    await prisma.entry.delete({
+    // Soft delete - mark as deleted with timestamp and user
+    await prisma.entry.update({
       where: { id },
+      data: {
+        deletedAt: new Date(),
+        deletedBy: session.user.id as string,
+      },
     });
 
     return NextResponse.json({
       success: true,
-      message: 'Entry deleted successfully',
+      message: 'Entry deleted successfully (can be restored within 30 days)',
     });
   } catch (error: any) {
     console.error('Error deleting entry:', error);

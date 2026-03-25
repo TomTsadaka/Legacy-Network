@@ -34,8 +34,11 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
-    // Build where clause
-    const where: any = { familyId };
+    // Build where clause (exclude deleted entries)
+    const where: any = { 
+      familyId,
+      deletedAt: null, // Only show non-deleted entries
+    };
 
     if (childId) {
       where.taggedChildren = { some: { childId } };

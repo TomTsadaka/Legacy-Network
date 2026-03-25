@@ -21,7 +21,6 @@ model User {
   accounts      Account[]
   comments      Comment[]
   entries       Entry[]        @relation("EntryAuthor")
-  entryVersions EntryVersion[]
   families      FamilyMember[]
   likes         Like[]
   media         Media[]
@@ -114,22 +113,23 @@ model Child {
 }
 
 model Entry {
-  id             String         @id @default(cuid())
+  id             String       @id @default(cuid())
   title          String
   content        String
   eventDate      DateTime
   location       String?
-  category       Category       @default(DAILY_LIFE)
-  visibility     Visibility     @default(FAMILY_ONLY)
+  category       Category     @default(DAILY_LIFE)
+  visibility     Visibility   @default(FAMILY_ONLY)
   authorId       String
   familyId       String
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  deletedAt      DateTime?
+  deletedBy      String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
   comments       Comment[]
-  author         User           @relation("EntryAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  family         Family         @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  author         User         @relation("EntryAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  family         Family       @relation(fields: [familyId], references: [id], onDelete: Cascade)
   taggedChildren EntryChild[]
-  versions       EntryVersion[]
   likes          Like[]
   media          Media[]
 
@@ -137,6 +137,7 @@ model Entry {
   @@index([authorId])
   @@index([eventDate])
   @@index([category])
+  @@index([deletedAt])
   @@map("entries")
 }
 
@@ -150,26 +151,6 @@ model EntryChild {
   @@unique([entryId, childId])
   @@index([childId])
   @@map("entry_children")
-}
-
-model EntryVersion {
-  id        String   @id @default(cuid())
-  entryId   String
-  version   Int
-  title     String
-  content   String
-  eventDate DateTime
-  location  String?
-  editedBy  String
-  editedAt  DateTime @default(now())
-  category  Category
-  editor    User     @relation(fields: [editedBy], references: [id])
-  entry     Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
-
-  @@unique([entryId, version])
-  @@index([entryId])
-  @@index([editedAt])
-  @@map("entry_versions")
 }
 
 model Media {
