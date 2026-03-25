@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import EntryCard from '@/components/EntryCard';
-import { Search, Plus, Sparkles, Users, LogOut } from 'lucide-react';
+import { Search, Plus, Sparkles, Users, LogOut, Trash2 } from 'lucide-react';
 
 export default function TimelinePage() {
   const { data: session, status } = useSession();
@@ -158,6 +158,13 @@ export default function TimelinePage() {
               <Plus className="w-5 h-5 md:w-6 md:h-6" />
               <span>זיכרון חדש</span>
               <Sparkles className="w-4 h-4 md:w-5 md:h-5 hidden sm:inline" />
+            </button>
+            <button
+              onClick={() => router.push('/trash')}
+              className="flex-1 md:flex-none bg-white/20 hover:bg-white/30 text-white font-bold px-4 md:px-6 py-2 md:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 text-sm md:text-base border-2 border-white/30"
+            >
+              <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+              <span className="hidden sm:inline">סל מחזור</span>
             </button>
             <button
               onClick={() => signOut({ callbackUrl: '/' })}
