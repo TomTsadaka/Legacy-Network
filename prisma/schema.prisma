@@ -237,3 +237,15 @@ enum MediaType {
   IMAGE
   VIDEO
 }
+
+model PageView {
+  id        String   @id @default(cuid())
+  path      String
+  userId    String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([path])
+  @@map("page_views")
+}

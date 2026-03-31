@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Merriweather } from 'next/font/google';
 import SessionProvider from '@/components/SessionProvider';
+import Analytics from '@/components/Analytics';
 import './globals.css';
 
 const inter = Inter({
@@ -31,6 +32,7 @@ export default function RootLayout({
     <html lang="he" dir="rtl" className={`${inter.variable} ${merriweather.variable}`}>
       <body className="min-h-screen antialiased">
         <SessionProvider>
+          <Analytics />
           {children}
         </SessionProvider>
       </body>

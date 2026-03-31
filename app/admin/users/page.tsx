@@ -308,8 +308,14 @@ export default function AdminUsersPage() {
           </div>
         </div>
 
-        {/* Back Button */}
-        <div className="mt-8">
+        {/* Navigation Buttons */}
+        <div className="mt-8 flex gap-4 flex-wrap">
+          <button
+            onClick={() => router.push('/admin/analytics')}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white font-bold rounded-full hover:shadow-lg transition-shadow"
+          >
+            📊 סטטיסטיקות אתר
+          </button>
           <button
             onClick={() => router.push('/timeline')}
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold rounded-full hover:shadow-lg transition-shadow"
