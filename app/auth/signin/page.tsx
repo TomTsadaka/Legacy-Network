@@ -83,7 +83,7 @@ export default function SignInPage() {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="tom"
+              placeholder="username"
               required
               className="input-playful text-lg"
               dir="ltr"

@@ -14,6 +14,7 @@ export default function TimelinePage() {
   const [children, setChildren] = useState<any[]>([]);
   const [family, setFamily] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Filters
   const [selectedChild, setSelectedChild] = useState<string>('');
@@ -28,6 +29,7 @@ export default function TimelinePage() {
 
     if (status === 'authenticated') {
       loadFamily();
+      checkAdminStatus();
     }
   }, [status]);
 
@@ -36,6 +38,18 @@ export default function TimelinePage() {
       loadEntries();
     }
   }, [family, selectedChild, selectedCategory, searchQuery]);
+
+  async function checkAdminStatus() {
+    try {
+      const res = await fetch('/api/auth/me');
+      const data = await res.json();
+      if (data.user?.role === 'SUPER_ADMIN') {
+        setIsAdmin(true);
+      }
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+    }
+  }
 
   async function loadFamily() {
     try {
@@ -144,6 +158,15 @@ export default function TimelinePage() {
 
           {/* Action Buttons - Responsive */}
           <div className="flex gap-2 md:gap-3 mb-4 flex-wrap">
+            {isAdmin && (
+              <button
+                onClick={() => router.push('/admin/users')}
+                className="flex-1 md:flex-none bg-purple-600 text-white font-bold px-4 md:px-6 py-2 md:py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 text-sm md:text-base"
+              >
+                <span className="text-xl md:text-2xl">👑</span>
+                <span className="hidden sm:inline">אדמין</span>
+              </button>
+            )}
             <button
               onClick={() => router.push('/family/members')}
               className="flex-1 md:flex-none bg-white text-blue-600 font-bold px-4 md:px-6 py-2 md:py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 text-sm md:text-base"

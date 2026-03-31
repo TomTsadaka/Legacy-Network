@@ -149,7 +149,7 @@ export default function SignUpPage() {
               type="text"
               value={formData.username}
               onChange={handleChange}
-              placeholder="tom"
+              placeholder="username"
               required
               className="input-playful text-lg"
               dir="ltr"
@@ -167,7 +167,7 @@ export default function SignUpPage() {
               type="text"
               value={formData.name}
               onChange={handleChange}
-              placeholder="תום צדקה"
+              placeholder="שם מלא"
               className="input-playful text-lg"
               dir="rtl"
             />
@@ -184,7 +184,7 @@ export default function SignUpPage() {
               type="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="tom@example.com"
+              placeholder="email@example.com"
               required
               className="input-playful text-lg"
               dir="ltr"
