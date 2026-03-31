@@ -143,7 +143,7 @@ export default function SignInPage() {
         <div className="text-center mt-8">
           <p className="text-purple-600 font-bold flex items-center justify-center gap-2">
             <span className="text-2xl">💙</span>
-            אתר אישי למשפחת צדקה
+            הזיכרונות שלך לנצח
             <span className="text-2xl">💙</span>
           </p>
         </div>

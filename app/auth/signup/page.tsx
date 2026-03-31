@@ -263,7 +263,7 @@ export default function SignUpPage() {
         <div className="text-center mt-8">
           <p className="text-purple-600 font-bold flex items-center justify-center gap-2">
             <span className="text-2xl">💙</span>
-            Legacy Network - הזיכרונות שלך לנצח
+            הזיכרונות שלך לנצח
             <span className="text-2xl">💙</span>
           </p>
         </div>
