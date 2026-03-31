@@ -2,7 +2,8 @@
 
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { Sparkles, ArrowLeft } from 'lucide-react';
 
 export default function SignInPage() {
   const [username, setUsername] = useState('');
@@ -125,6 +126,18 @@ export default function SignInPage() {
             )}
           </button>
         </form>
+
+        {/* Sign Up Link */}
+        <div className="text-center mt-6">
+          <p className="text-gray-700 mb-2">עדיין אין לך חשבון?</p>
+          <Link 
+            href="/auth/signup" 
+            className="inline-flex items-center gap-2 text-purple-600 font-bold hover:text-purple-800 transition-colors"
+          >
+            צור חשבון חדש
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+        </div>
 
         {/* Footer */}
         <div className="text-center mt-8">

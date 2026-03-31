@@ -82,6 +82,58 @@
 - [ ] Email notifications
 - [ ] Mobile app (PWA install prompt)
 
+## 🌟 Phase 6: Advanced Features
+
+### 1. AI Caption Generator 📝
+- [ ] Image upload integration
+- [ ] AI-powered caption suggestions (OpenAI/Anthropic)
+- [ ] Smart context detection (child name, age, activity)
+- [ ] One-click caption acceptance
+- [ ] Custom prompt templates for different memory types
+
+### 2. Smart Reminders 🔔
+- [ ] Weekly engagement prompts ("מה קרה השבוע עם נועה?")
+- [ ] Birthday countdown alerts (14 days, 7 days, 1 day)
+- [ ] Milestone reminders based on child age
+- [ ] Push notification system
+- [ ] User-configurable reminder preferences
+- [ ] "It's been X days since update" tracking
+
+### 3. Voice Memos 🎤
+- [ ] Record audio directly in entry form
+- [ ] Speech-to-text transcription (Whisper API)
+- [ ] Keep original audio as attachment
+- [ ] Play audio in timeline
+- [ ] Mobile-optimized recording UI
+- [ ] Audio waveform visualization
+
+### 4. Family Highlights Reel 🎬
+- [ ] Monthly/yearly auto-generated video
+- [ ] Select top 12 moments automatically (most liked/viewed)
+- [ ] Add background music library
+- [ ] Smooth transitions and text overlays
+- [ ] Export to MP4
+- [ ] Share link generation for grandparents
+- [ ] Custom date range selection
+
+### 5. Compare Mode 📊
+- [ ] Side-by-side child comparison UI
+- [ ] "Child A at age X vs Child B at age X"
+- [ ] Photo gallery comparison
+- [ ] Milestone timeline comparison
+- [ ] Similar moment detection
+- [ ] Growth chart comparisons
+- [ ] Share comparison snapshots
+
+### 6. Guest View Mode 👀
+- [ ] Generate temporary share links (7-day expiry)
+- [ ] Read-only access for grandparents
+- [ ] No account registration required
+- [ ] Customizable permissions (specific children/date ranges)
+- [ ] Link analytics (who viewed, when)
+- [ ] Revoke access anytime
+- [ ] Optional password protection
+
 ## 🛠️ Technical Debt
 
 - [ ] Set up actual PostgreSQL database (currently using .env placeholder)
@@ -119,7 +171,16 @@
 
 **Next Steps**: Build the Timeline Feed and Entry Creation system.
 
-**Latest Update (March 21, 2026):**
+**Latest Update (March 26, 2026):**
+- 📋 Added Phase 6: Advanced Features roadmap
+- 🎯 Planned AI Caption Generator for faster memory creation
+- 🎯 Planned Smart Reminders system for engagement
+- 🎯 Planned Voice Memos with speech-to-text
+- 🎯 Planned Family Highlights Reel (auto-generated videos)
+- 🎯 Planned Compare Mode for sibling/milestone comparison
+- 🎯 Planned Guest View Mode for easy family sharing
+
+**Previous Update (March 21, 2026):**
 - ✅ Added username/password authentication
 - ✅ Created demo admin user with full system access
 - ✅ Implemented hierarchical permission system (User + Family roles)
