@@ -28,6 +28,7 @@ export default function CreateEntryPage() {
   const [category, setCategory] = useState('DAILY_LIFE');
   const [location, setLocation] = useState('');
   const [selectedChildren, setSelectedChildren] = useState<string[]>([]);
+  const [visibility, setVisibility] = useState('FAMILY_ONLY');
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -158,6 +159,7 @@ export default function CreateEntryPage() {
           content,
           eventDate,
           category,
+          visibility,
           location: location || undefined,
           familyId: family.id,
           childrenIds: selectedChildren,
