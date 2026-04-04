@@ -82,7 +82,90 @@
 - [ ] Email notifications
 - [ ] Mobile app (PWA install prompt)
 
-## 🌟 Phase 6: Advanced Features
+## 🌐 Phase 6: Social Network Features (NEW PRIORITY!)
+
+### 1. Friendship System 👥
+- [ ] **Schema updates** ✅ (Friendship, Notification, EntryTag models)
+- [ ] Friend request API routes:
+  - [ ] POST /api/friends/request (שלח בקשת חברות)
+  - [ ] POST /api/friends/[id]/accept (אשר בקשה)
+  - [ ] POST /api/friends/[id]/reject (דחה בקשה)
+  - [ ] DELETE /api/friends/[id] (הסר חבר)
+  - [ ] GET /api/friends (רשימת חברים + בקשות ממתינות)
+- [ ] UI Components:
+  - [ ] Friend request button
+  - [ ] Friends list page
+  - [ ] Pending requests badge
+  - [ ] Friend search
+- [ ] Notifications for friend requests
+
+### 2. Enhanced Visibility & Feed 📱
+- [ ] Update Entry visibility to include `FRIENDS`
+- [ ] Combined feed algorithm:
+  - [ ] My family entries
+  - [ ] Friends' public/friends entries
+  - [ ] Tagged entries
+- [ ] API routes:
+  - [ ] GET /api/feed (smart feed)
+  - [ ] GET /api/feed/friends (חברים בלבד)
+  - [ ] GET /api/feed/public (discover)
+- [ ] Feed UI:
+  - [ ] Tabs: All / Friends / My Family
+  - [ ] Infinite scroll
+  - [ ] Visibility indicator on cards
+
+### 3. Tagging & Mentions 🏷️
+- [ ] Tag other families in entries
+- [ ] API routes:
+  - [ ] POST /api/entries/[id]/tag (תייג משפחה)
+  - [ ] DELETE /api/entries/[id]/tag/[familyId]
+- [ ] UI:
+  - [ ] Family mention autocomplete (@משפחת_כהן)
+  - [ ] Tagged families displayed on entry
+  - [ ] "You were tagged" notifications
+- [ ] Privacy: only family owner can approve tags
+
+### 4. Enhanced Engagement 💬
+- [ ] Likes (already exists, needs UI polish)
+- [ ] Comments (already exists, needs UI)
+- [ ] Share counter
+- [ ] Notifications:
+  - [ ] New like
+  - [ ] New comment
+  - [ ] Tagged in entry
+  - [ ] Friend accepted
+
+### 5. User Profiles & Discovery 🔍
+- [ ] Public user profiles:
+  - [ ] Bio, location, profile picture
+  - [ ] Public entries grid
+  - [ ] Friend count
+- [ ] Family profiles:
+  - [ ] Family photo
+  - [ ] Children (opt-in to show publicly)
+  - [ ] Public entries
+- [ ] Search & Discovery:
+  - [ ] Search users by name/username
+  - [ ] Search families
+  - [ ] Suggested friends (mutual friends)
+  - [ ] Popular entries (trending)
+- [ ] Privacy settings page:
+  - [ ] Profile visibility (public/private)
+  - [ ] Who can tag me
+  - [ ] Who can see my friends
+
+### 6. Safety & Moderation 🛡️
+- [ ] Block users
+- [ ] Report entries/users
+- [ ] Child safety:
+  - [ ] Only parents can tag their own children
+  - [ ] Children opt-in to public profiles
+  - [ ] Face blur option for children
+- [ ] Content warnings
+
+---
+
+## 🌟 Phase 7: Advanced Features (Future)
 
 ### 1. AI Caption Generator 📝
 - [ ] Image upload integration

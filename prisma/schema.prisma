@@ -8,23 +8,28 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(cuid())
-  name          String?
-  email         String         @unique
-  emailVerified DateTime?
-  image         String?
-  username      String?        @unique
-  password      String?
-  role          UserRole       @default(USER)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  accounts      Account[]
-  comments      Comment[]
-  entries       Entry[]        @relation("EntryAuthor")
-  families      FamilyMember[]
-  likes         Like[]
-  media         Media[]
-  sessions      Session[]
+  id                   String         @id @default(cuid())
+  name                 String?
+  email                String         @unique
+  emailVerified        DateTime?
+  image                String?
+  username             String?        @unique
+  password             String?
+  role                 UserRole       @default(USER)
+  bio                  String?
+  location             String?
+  isPublic             Boolean        @default(false)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  accounts             Account[]
+  comments             Comment[]
+  entries              Entry[]        @relation("EntryAuthor")
+  families             FamilyMember[]
+  likes                Like[]
+  media                Media[]
+  sessions             Session[]
+  sentFriendRequests   Friendship[]   @relation("FriendshipRequester")
+  receivedFriendRequests Friendship[] @relation("FriendshipAddressee")
 
   @@map("users")
 }
@@ -230,12 +235,74 @@ enum Category {
 enum Visibility {
   PRIVATE
   FAMILY_ONLY
+  FRIENDS
   PUBLIC
 }
 
 enum MediaType {
   IMAGE
   VIDEO
+}
+
+model Friendship {
+  id          String           @id @default(cuid())
+  requesterId String
+  addresseeId String
+  status      FriendshipStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  requester   User             @relation("FriendshipRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addressee   User             @relation("FriendshipAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, addresseeId])
+  @@index([requesterId])
+  @@index([addresseeId])
+  @@index([status])
+  @@map("friendships")
+}
+
+model Notification {
+  id         String           @id @default(cuid())
+  userId     String
+  type       NotificationType
+  title      String
+  message    String
+  link       String?
+  read       Boolean          @default(false)
+  relatedId  String?
+  createdAt  DateTime         @default(now())
+
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model EntryTag {
+  id       String @id @default(cuid())
+  entryId  String
+  familyId String
+
+  @@unique([entryId, familyId])
+  @@index([entryId])
+  @@index([familyId])
+  @@map("entry_tags")
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  BLOCKED
+}
+
+enum NotificationType {
+  FRIEND_REQUEST
+  FRIEND_ACCEPTED
+  ENTRY_LIKE
+  ENTRY_COMMENT
+  ENTRY_TAG
+  SYSTEM
 }
 
 model PageView {

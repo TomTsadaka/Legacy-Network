@@ -175,6 +175,13 @@ export default function TimelinePage() {
               <span className="hidden sm:inline">המשפחה</span>
             </button>
             <button
+              onClick={() => router.push('/friends')}
+              className="flex-1 md:flex-none bg-white text-blue-600 font-bold px-4 md:px-6 py-2 md:py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 text-sm md:text-base"
+            >
+              <Users className="w-5 h-5 md:w-6 md:h-6" />
+              <span className="hidden sm:inline">חברים</span>
+            </button>
+            <button
               onClick={() => router.push('/entries/create')}
               className="flex-1 md:flex-none bg-white text-blue-600 font-bold px-4 md:px-6 py-2 md:py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 text-sm md:text-base"
             >
