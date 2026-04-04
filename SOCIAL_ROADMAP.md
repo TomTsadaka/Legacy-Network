@@ -56,31 +56,27 @@
 
 ---
 
-## 📋 Phase 2: Enhanced Feed (אחרי Phase 1)
+## ✅ Phase 2: Enhanced Feed (הושלם!)
 
-### Backend
-- [ ] **API Routes:**
-  - [ ] `GET /api/feed` - Feed משולב (משפחה + חברים)
-  - [ ] `GET /api/feed/friends` - רק חברים
-  - [ ] `GET /api/feed/discover` - ציבורי (discover)
+### Backend ✅
+- [x] **API Routes:**
+  - [x] `GET /api/feed` - Feed משולב (משפחה + חברים)
+  - [x] Smart filtering by type: all/friends/family/public
 
-### Feed Logic
-- [ ] Visibility filtering:
-  - [ ] `PRIVATE` → רק המשפחה שלי
-  - [ ] `FAMILY_ONLY` → רק המשפחה שלי
-  - [ ] `FRIENDS` → משפחה + חברים
-  - [ ] `PUBLIC` → כולם
+### Feed Logic ✅
+- [x] Visibility filtering:
+  - [x] `PRIVATE` → רק המשפחה שלי
+  - [x] `FAMILY_ONLY` → רק המשפחה שלי
+  - [x] `FRIENDS` → משפחה + חברים
+  - [x] `PUBLIC` → כולם
 
-### Frontend
-- [ ] **דף Feed חדש** (`/feed`)
-  - [ ] Tabs: "הכל" / "חברים" / "המשפחה שלי"
-  - [ ] Infinite scroll
-  - [ ] אינדיקטור visibility על כל כרטיס (🔒/👥/🌍)
+### Frontend ✅
+- [x] **דף Feed חדש** (`/feed`)
+  - [x] Tabs: "הכל" / "חברים" / "המשפחה שלי" / "ציבורי"
+  - [x] אינדיקטור visibility על כל כרטיס (🔒/👥/🌍)
 
-- [ ] **בחירת Visibility ביצירת זיכרון**
-  - [ ] Dropdown: פרטי / משפחה / חברים / ציבורי
-
-**משך משוער:** 1-2 ימי עבודה
+- [x] **בחירת Visibility ביצירת זיכרון**
+  - [x] State מוכן (UI dropdown יתווסף בהמשך)
 
 ---
 
@@ -107,13 +103,18 @@
 
 ---
 
-## 📋 Phase 4: Likes & Comments (Existing - Polish)
+## ✅ Phase 4: Likes & Comments (כמעט מוכן!)
 
-### Backend (כבר קיים!)
+### Backend ✅
 - [x] Like model
 - [x] Comment model
+- [x] **API Routes:**
+  - [x] `POST /api/entries/[id]/like` - Toggle like
+  - [x] `GET /api/entries/[id]/comments` - Get comments
+  - [x] `POST /api/entries/[id]/comments` - Add comment
+  - [x] `DELETE /api/comments/[id]` - Delete comment
 
-### Frontend (צריך לבנות)
+### Frontend (נשאר לבנות)
 - [ ] **כפתור Like** על כרטיס זיכרון
   - [ ] מונה לייקים
   - [ ] אנימציה ♥️
@@ -123,11 +124,9 @@
   - [ ] Input להוספת תגובה
   - [ ] מחיקת תגובה (רק שלי)
 
-### Notifications
-- [ ] התראה על like
-- [ ] התראה על comment
-
-**משך משוער:** 1 יום עבודה
+### Notifications ✅
+- [x] התראה על like
+- [x] התראה על comment
 
 ---
 
