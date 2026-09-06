@@ -1,7 +1,6 @@
 {
   "buildCommand": null,
   "framework": null,
-  "rootDirectory": ".",
   "rewrites": [
     {
       "source": "/(.*)",
