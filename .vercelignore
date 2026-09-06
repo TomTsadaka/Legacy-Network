@@ -1,0 +1,11 @@
+app
+components
+lib
+prisma
+scripts
+types
+*.md
+.env*
+blob-token.txt
+check-db.js
+add-blob-token.ps1

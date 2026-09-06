@@ -1,7 +1,7 @@
 {
   "buildCommand": null,
   "framework": null,
-  "outputDirectory": ".",
+  "rootDirectory": ".",
   "rewrites": [
     {
       "source": "/(.*)",
