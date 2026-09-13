@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 
 // POST /api/friends/request - Send friend request
 export async function POST(req: NextRequest) {
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
         userId: targetUserId,
         type: "FRIEND_REQUEST",
         title: "בקשת חברות חדשה",
-        message: `${session.user.name || session.user.username} שלח/ה לך בקשת חברות`,
+        message: `${session.user.name || "משתמש"} שלח/ה לך בקשת חברות`,
         link: `/friends`,
         relatedId: friendship.id,
       },

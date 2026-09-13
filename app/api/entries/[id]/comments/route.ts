@@ -1,20 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 
 // GET /api/entries/[id]/comments - Get comments for entry
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const comments = await prisma.comment.findMany({
-      where: { entryId: params.id },
+      where: { entryId: id },
       include: {
         user: {
           select: {
@@ -41,9 +42,10 @@ export async function GET(
 // POST /api/entries/[id]/comments - Add comment
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -58,7 +60,7 @@ export async function POST(
       );
     }
 
-    const entryId = params.id;
+    const entryId = id;
 
     // Check if entry exists
     const entry = await prisma.entry.findUnique({
@@ -96,7 +98,7 @@ export async function POST(
           userId: entry.authorId,
           type: "ENTRY_COMMENT",
           title: "תגובה חדשה!",
-          message: `${session.user.name || session.user.username} הגיב/ה על הזיכרון שלך`,
+          message: `${session.user.name || "משתמש"} הגיב/ה על הזיכרון שלך`,
           link: `/entries/${entryId}`,
           relatedId: comment.id,
         },

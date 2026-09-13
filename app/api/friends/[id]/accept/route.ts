@@ -1,20 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 
 // POST /api/friends/[id]/accept - Accept friend request
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const friendship = await prisma.friendship.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: { requester: true },
     });
 
@@ -38,7 +39,7 @@ export async function POST(
 
     // Update status to ACCEPTED
     await prisma.friendship.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { status: "ACCEPTED" },
     });
 
@@ -48,7 +49,7 @@ export async function POST(
         userId: friendship.requesterId,
         type: "FRIEND_ACCEPTED",
         title: "בקשת החברות אושרה!",
-        message: `${session.user.name || session.user.username} אישר/ה את בקשת החברות שלך`,
+        message: `${session.user.name || "משתמש"} אישר/ה את בקשת החברות שלך`,
         link: `/friends`,
         relatedId: friendship.id,
       },

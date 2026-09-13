@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 
 // POST /api/entries/[id]/like - Toggle like
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const entryId = params.id;
+    const entryId = id;
 
     // Check if entry exists
     const entry = await prisma.entry.findUnique({
@@ -58,7 +59,7 @@ export async function POST(
             userId: entry.authorId,
             type: "ENTRY_LIKE",
             title: "לייק חדש!",
-            message: `${session.user.name || session.user.username} אהב/ה את הזיכרון שלך`,
+            message: `${session.user.name || "משתמש"} אהב/ה את הזיכרון שלך`,
             link: `/entries/${entryId}`,
             relatedId: entryId,
           },
