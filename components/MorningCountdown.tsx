@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Calendar, Clock, Sunrise, AlertCircle, ChevronLeft, Tag } from 'lucide-react';
 import {
   describeMorningCountdown,
   formatHebrewDate,
@@ -21,30 +20,20 @@ function dayOffsetValue(offset: number): string {
   return toInputValue(date);
 }
 
-interface UnitBoxProps {
-  value: number;
-  label: string;
-  highlight?: boolean;
-}
-
-function UnitBox({ value, label, highlight = false }: UnitBoxProps) {
+function Unit({ value, label }: { value: number; label: string }) {
   return (
-    <div
-      className={`flex-1 min-w-[5rem] rounded-2xl border-3 px-3 py-4 text-center shadow-md transition-all ${
-        highlight
-          ? 'bg-gradient-to-b from-blue-500 to-cyan-500 border-blue-400 text-white'
-          : 'bg-white/90 border-blue-200 text-blue-900'
-      }`}
-    >
-      <div className="text-4xl sm:text-5xl font-black tabular-nums leading-none" dir="ltr">
+    <div className="border-s border-stone-200 first:border-s-0">
+      <div className="text-4xl sm:text-5xl font-extralight tabular-nums text-stone-900" dir="ltr">
         {value}
       </div>
-      <div className={`mt-2 text-sm font-bold ${highlight ? 'text-blue-50' : 'text-blue-600'}`}>
-        {label}
-      </div>
+      <div className="mt-2 text-xs tracking-wide text-stone-400">{label}</div>
     </div>
   );
 }
+
+const FIELD_CLASS =
+  'w-full bg-transparent text-center text-lg text-stone-900 placeholder:text-stone-300 ' +
+  'border-b border-stone-200 pb-2 outline-none transition-colors focus:border-stone-900';
 
 export default function MorningCountdown() {
   const [dateInput, setDateInput] = useState('');
@@ -60,11 +49,6 @@ export default function MorningCountdown() {
     return () => clearInterval(timer);
   }, []);
 
-  const result = useMemo(
-    () => (now && dateInput ? describeMorningCountdown(dateInput, now, { includeSeconds: true }) : null),
-    [dateInput, now]
-  );
-
   const trimmedTitle = title.trim();
 
   // הכותרת מופיעה גם בלשונית הדפדפן, כך ש"הוספה למסך הבית" בטלפון
@@ -79,8 +63,12 @@ export default function MorningCountdown() {
     };
   }, [trimmedTitle]);
 
+  const result = useMemo(
+    () => (now && dateInput ? describeMorningCountdown(dateInput, now, { includeSeconds: true }) : null),
+    [dateInput, now]
+  );
+
   const hasInvalidInput = dateInput.trim().length > 0 && now !== null && result === null;
-  const todayValue = now ? toInputValue(now) : '';
 
   const quickPicks: Array<{ label: string; offset: number }> = [
     { label: 'היום', offset: 0 },
@@ -90,136 +78,86 @@ export default function MorningCountdown() {
   ];
 
   return (
-    <div className="w-full max-w-3xl mx-auto" dir="rtl">
-      {/* כרטיס הקלט */}
-      <div className="card-playful p-6 sm:p-8 mb-6">
-        <label htmlFor="countdown-title" className="flex items-center gap-2 text-lg font-bold text-blue-900 mb-3">
-          <Tag className="w-5 h-5 text-blue-500" />
-          כותרת לספירה
-          <span className="text-sm font-normal text-blue-400">(לא חובה)</span>
-        </label>
+    <div className="w-full max-w-md mx-auto text-center" dir="rtl">
+      <input
+        id="countdown-title"
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        maxLength={60}
+        placeholder="כותרת (לא חובה)"
+        aria-label="כותרת לספירה"
+        className={FIELD_CLASS}
+      />
 
-        <input
-          id="countdown-title"
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          maxLength={60}
-          placeholder="למשל: הטיול לצפון"
-          className="input-playful text-lg font-bold text-blue-900 mb-6"
-        />
+      <input
+        id="target-date"
+        type="date"
+        value={dateInput}
+        onChange={(e) => setDateInput(e.target.value)}
+        aria-label="תאריך היעד"
+        className={`${FIELD_CLASS} mt-8`}
+      />
 
-        <label htmlFor="target-date" className="flex items-center gap-2 text-lg font-bold text-blue-900 mb-3">
-          <Calendar className="w-5 h-5 text-blue-500" />
-          בחרו תאריך
-        </label>
-
-        <input
-          id="target-date"
-          type="date"
-          value={dateInput}
-          onChange={(e) => setDateInput(e.target.value)}
-          className="input-playful text-lg font-bold text-blue-900"
-          dir="ltr"
-          aria-describedby="date-help"
-        />
-
-        <p id="date-help" className="mt-2 text-sm text-blue-600">
-          נציג כמה ימים, שעות ודקות נותרו עד {MORNING_HOUR}:00 בבוקר באותו יום (שעון מקומי).
-        </p>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          {quickPicks.map((pick) => {
-            const value = now ? dayOffsetValue(pick.offset) : '';
-            const isActive = value !== '' && value === dateInput;
-            return (
-              <button
-                key={pick.label}
-                type="button"
-                onClick={() => setDateInput(dayOffsetValue(pick.offset))}
-                disabled={!now}
-                className={`badge-playful disabled:opacity-50 ${
-                  isActive
-                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white'
-                    : 'bg-white border-2 border-blue-200 text-blue-700 hover:bg-blue-50'
-                }`}
-              >
-                {pick.label}
-              </button>
-            );
-          })}
-        </div>
+      <div className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-3">
+        {quickPicks.map((pick) => {
+          const value = now ? dayOffsetValue(pick.offset) : '';
+          const isActive = value !== '' && value === dateInput;
+          return (
+            <button
+              key={pick.label}
+              type="button"
+              onClick={() => setDateInput(dayOffsetValue(pick.offset))}
+              disabled={!now}
+              className={`text-sm pb-1 border-b transition-colors disabled:opacity-40 ${
+                isActive
+                  ? 'text-stone-900 border-stone-900'
+                  : 'text-stone-400 border-transparent hover:text-stone-900'
+              }`}
+            >
+              {pick.label}
+            </button>
+          );
+        })}
       </div>
 
-      {/* שגיאת קלט */}
       {hasInvalidInput && (
-        <div className="card-playful p-5 mb-6 border-amber-300 bg-amber-50/90 animate-shake">
-          <div className="flex items-center gap-3 text-amber-800 font-bold">
-            <AlertCircle className="w-5 h-5 shrink-0" />
-            <span>התאריך שהוקש אינו תקין. נסו לבחור תאריך מהלוח.</span>
-          </div>
-        </div>
+        <p className="mt-16 text-sm text-stone-500">התאריך שהוקש אינו תקין.</p>
       )}
 
-      {/* טעינה ראשונית (לפני שהשעון עלה בצד הלקוח) */}
-      {!now && (
-        <div className="card-playful p-8 text-center text-blue-600 font-bold">טוען את השעון…</div>
-      )}
+      {!now && <p className="mt-16 text-sm text-stone-400">טוען…</p>}
 
-      {/* התוצאה */}
       {result && (
-        <div className="card-playful p-6 sm:p-8">
-          <div className="flex items-center gap-2 text-blue-600 font-bold mb-1">
-            <Sunrise className="w-5 h-5 text-amber-500" />
-            <span>
-              היעד: {MORNING_HOUR}:00 בבוקר, {result.dateLabel}
-            </span>
-          </div>
-
+        <div className="mt-16">
           {trimmedTitle && (
-            <h2 className="text-3xl sm:text-4xl font-black text-blue-900 mt-2 mb-1 break-words">
-              {trimmedTitle}
-            </h2>
+            <h2 className="text-2xl font-light text-stone-900 mb-6 break-words">{trimmedTitle}</h2>
           )}
 
-          <p
-            className={`text-2xl sm:text-3xl font-black mb-6 ${
-              result.parts.isPast ? 'text-amber-700' : 'text-blue-900'
-            }`}
-          >
-            {result.parts.isPast ? 'הזמן הזה כבר עבר' : 'נותרו'}
+          <p className="text-xs tracking-widest text-stone-400">
+            {result.parts.isPast ? 'חלף לפני' : 'נותרו'}
           </p>
 
-          <div className="flex flex-wrap gap-3 mb-6">
-            <UnitBox value={result.parts.days} label="ימים" highlight={!result.parts.isPast} />
-            <UnitBox value={result.parts.hours} label="שעות" highlight={!result.parts.isPast} />
-            <UnitBox value={result.parts.minutes} label="דקות" highlight={!result.parts.isPast} />
-            <UnitBox value={result.parts.seconds} label="שניות" />
+          <div className="mt-6 grid grid-cols-4">
+            <Unit value={result.parts.days} label="ימים" />
+            <Unit value={result.parts.hours} label="שעות" />
+            <Unit value={result.parts.minutes} label="דקות" />
+            <Unit value={result.parts.seconds} label="שניות" />
           </div>
 
-          <p className="text-lg sm:text-xl font-bold text-blue-900 leading-relaxed">
+          <div className="mx-auto mt-10 h-px w-10 bg-stone-200" />
+
+          <p className="mt-10 text-sm leading-relaxed text-stone-500">
             {trimmedTitle ? `${trimmedTitle} – ${result.sentence}` : result.sentence}
           </p>
 
-          <div className="mt-4 flex items-center gap-2 text-sm text-blue-500">
-            <Clock className="w-4 h-4" />
-            <span>מתעדכן כל שנייה</span>
-          </div>
-
-          {/* אם 6:00 של אותו יום כבר עבר - קפיצה לבוקר הבא */}
           {result.nextMorning && (
             <button
               type="button"
               onClick={() => setDateInput(toInputValue(result.nextMorning!))}
-              className="btn-primary-playful mt-6 inline-flex items-center gap-2"
+              className="mt-6 text-sm text-stone-400 underline underline-offset-4 transition-colors hover:text-stone-900"
             >
-              <ChevronLeft className="w-5 h-5" />
               ספירה עד {MORNING_HOUR}:00 של הבוקר הבא ({formatHebrewDate(result.nextMorning)})
             </button>
-          )}
-
-          {todayValue && todayValue === dateInput && !result.parts.isPast && (
-            <p className="mt-4 text-sm text-blue-600">זהו הבוקר של היום – עוד לא הגיעה השעה {MORNING_HOUR}:00.</p>
           )}
         </div>
       )}
