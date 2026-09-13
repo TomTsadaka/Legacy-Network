@@ -12,10 +12,10 @@ export default function CountdownPage() {
   return (
     <div className="min-h-screen bg-stone-50 px-6 py-20 sm:py-28" dir="rtl">
       <div className="mx-auto max-w-md text-center">
-        <h1 className="text-xl font-light tracking-tight text-stone-900">
+        <h1 className="text-2xl font-bold tracking-tight text-stone-900">
           עד {MORNING_HOUR}:00 בבוקר
         </h1>
-        <p className="mt-3 text-sm text-stone-400">
+        <p className="mt-3 text-sm font-medium text-stone-500">
           בחרו תאריך ונציג כמה ימים, שעות ודקות נותרו
         </p>
 
@@ -25,7 +25,7 @@ export default function CountdownPage() {
 
         <Link
           href="/"
-          className="mt-20 inline-block text-sm text-stone-400 transition-colors hover:text-stone-900"
+          className="mt-20 inline-block text-sm font-medium text-stone-600 transition-colors hover:text-stone-900"
         >
           חזרה לדף הבית
         </Link>

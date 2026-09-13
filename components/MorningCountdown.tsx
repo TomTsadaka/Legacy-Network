@@ -23,17 +23,17 @@ function dayOffsetValue(offset: number): string {
 function Unit({ value, label }: { value: number; label: string }) {
   return (
     <div className="border-s border-stone-200 first:border-s-0">
-      <div className="text-4xl sm:text-5xl font-extralight tabular-nums text-stone-900" dir="ltr">
+      <div className="text-4xl sm:text-5xl font-bold tracking-tight tabular-nums text-stone-900" dir="ltr">
         {value}
       </div>
-      <div className="mt-2 text-xs tracking-wide text-stone-400">{label}</div>
+      <div className="mt-2 text-xs font-semibold tracking-wide text-stone-500">{label}</div>
     </div>
   );
 }
 
 const FIELD_CLASS =
-  'w-full bg-transparent text-center text-lg text-stone-900 placeholder:text-stone-300 ' +
-  'border-b border-stone-200 pb-2 outline-none transition-colors focus:border-stone-900';
+  'w-full bg-transparent text-center text-lg font-semibold text-stone-900 placeholder:font-medium ' +
+  'placeholder:text-stone-400 border-b border-stone-300 pb-2 outline-none transition-colors focus:border-stone-900';
 
 export default function MorningCountdown() {
   const [dateInput, setDateInput] = useState('');
@@ -111,8 +111,8 @@ export default function MorningCountdown() {
               disabled={!now}
               className={`text-sm pb-1 border-b transition-colors disabled:opacity-40 ${
                 isActive
-                  ? 'text-stone-900 border-stone-900'
-                  : 'text-stone-400 border-transparent hover:text-stone-900'
+                  ? 'font-semibold text-stone-900 border-stone-900'
+                  : 'font-medium text-stone-500 border-transparent hover:text-stone-900'
               }`}
             >
               {pick.label}
@@ -122,18 +122,18 @@ export default function MorningCountdown() {
       </div>
 
       {hasInvalidInput && (
-        <p className="mt-16 text-sm text-stone-500">התאריך שהוקש אינו תקין.</p>
+        <p className="mt-16 text-sm font-medium text-stone-600">התאריך שהוקש אינו תקין.</p>
       )}
 
-      {!now && <p className="mt-16 text-sm text-stone-400">טוען…</p>}
+      {!now && <p className="mt-16 text-sm font-medium text-stone-500">טוען…</p>}
 
       {result && (
         <div className="mt-16">
           {trimmedTitle && (
-            <h2 className="text-2xl font-light text-stone-900 mb-6 break-words">{trimmedTitle}</h2>
+            <h2 className="text-2xl font-bold text-stone-900 mb-6 break-words">{trimmedTitle}</h2>
           )}
 
-          <p className="text-xs tracking-widest text-stone-400">
+          <p className="text-xs font-semibold tracking-widest text-stone-500">
             {result.parts.isPast ? 'חלף לפני' : 'נותרו'}
           </p>
 
@@ -146,7 +146,7 @@ export default function MorningCountdown() {
 
           <div className="mx-auto mt-10 h-px w-10 bg-stone-200" />
 
-          <p className="mt-10 text-sm leading-relaxed text-stone-500">
+          <p className="mt-10 text-base font-medium leading-relaxed text-stone-700">
             {trimmedTitle ? `${trimmedTitle} – ${result.sentence}` : result.sentence}
           </p>
 
@@ -154,7 +154,7 @@ export default function MorningCountdown() {
             <button
               type="button"
               onClick={() => setDateInput(toInputValue(result.nextMorning!))}
-              className="mt-6 text-sm text-stone-400 underline underline-offset-4 transition-colors hover:text-stone-900"
+              className="mt-6 text-sm font-medium text-stone-600 underline underline-offset-4 transition-colors hover:text-stone-900"
             >
               ספירה עד {MORNING_HOUR}:00 של הבוקר הבא ({formatHebrewDate(result.nextMorning)})
             </button>
