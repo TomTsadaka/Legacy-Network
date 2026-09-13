@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Calendar, Clock, Sunrise, AlertCircle, ChevronLeft } from 'lucide-react';
+import { Calendar, Clock, Sunrise, AlertCircle, ChevronLeft, Tag } from 'lucide-react';
 import {
   describeMorningCountdown,
   formatHebrewDate,
@@ -48,6 +48,7 @@ function UnitBox({ value, label, highlight = false }: UnitBoxProps) {
 
 export default function MorningCountdown() {
   const [dateInput, setDateInput] = useState('');
+  const [title, setTitle] = useState('');
   const [now, setNow] = useState<Date | null>(null);
 
   // ברירת המחדל והשעון נקבעים רק בצד הלקוח כדי למנוע אי-התאמה בהידרציה
@@ -64,6 +65,20 @@ export default function MorningCountdown() {
     [dateInput, now]
   );
 
+  const trimmedTitle = title.trim();
+
+  // הכותרת מופיעה גם בלשונית הדפדפן, כך ש"הוספה למסך הבית" בטלפון
+  // מציעה את שם הספירה כשם הקיצור
+  useEffect(() => {
+    const original = document.title;
+    if (trimmedTitle) {
+      document.title = `${trimmedTitle} | ספירה לאחור`;
+    }
+    return () => {
+      document.title = original;
+    };
+  }, [trimmedTitle]);
+
   const hasInvalidInput = dateInput.trim().length > 0 && now !== null && result === null;
   const todayValue = now ? toInputValue(now) : '';
 
@@ -78,6 +93,22 @@ export default function MorningCountdown() {
     <div className="w-full max-w-3xl mx-auto" dir="rtl">
       {/* כרטיס הקלט */}
       <div className="card-playful p-6 sm:p-8 mb-6">
+        <label htmlFor="countdown-title" className="flex items-center gap-2 text-lg font-bold text-blue-900 mb-3">
+          <Tag className="w-5 h-5 text-blue-500" />
+          כותרת לספירה
+          <span className="text-sm font-normal text-blue-400">(לא חובה)</span>
+        </label>
+
+        <input
+          id="countdown-title"
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          maxLength={60}
+          placeholder="למשל: הטיול לצפון"
+          className="input-playful text-lg font-bold text-blue-900 mb-6"
+        />
+
         <label htmlFor="target-date" className="flex items-center gap-2 text-lg font-bold text-blue-900 mb-3">
           <Calendar className="w-5 h-5 text-blue-500" />
           בחרו תאריך
@@ -145,13 +176,19 @@ export default function MorningCountdown() {
             </span>
           </div>
 
-          <h2
+          {trimmedTitle && (
+            <h2 className="text-3xl sm:text-4xl font-black text-blue-900 mt-2 mb-1 break-words">
+              {trimmedTitle}
+            </h2>
+          )}
+
+          <p
             className={`text-2xl sm:text-3xl font-black mb-6 ${
               result.parts.isPast ? 'text-amber-700' : 'text-blue-900'
             }`}
           >
             {result.parts.isPast ? 'הזמן הזה כבר עבר' : 'נותרו'}
-          </h2>
+          </p>
 
           <div className="flex flex-wrap gap-3 mb-6">
             <UnitBox value={result.parts.days} label="ימים" highlight={!result.parts.isPast} />
@@ -161,7 +198,7 @@ export default function MorningCountdown() {
           </div>
 
           <p className="text-lg sm:text-xl font-bold text-blue-900 leading-relaxed">
-            {result.sentence}
+            {trimmedTitle ? `${trimmedTitle} – ${result.sentence}` : result.sentence}
           </p>
 
           <div className="mt-4 flex items-center gap-2 text-sm text-blue-500">
