@@ -2,16 +2,18 @@
 #
 # Sets up the macOS C++ toolchain for The Chamber (Unreal Engine 5.8).
 #
-# Automates everything except the one step that cannot be automated: Apple
-# requires an authenticated download, so xcodes will prompt for your Apple ID.
-# It is a free account -- a paid developer membership is not needed.
+# Apple requires an authenticated download for Xcode, so that one step needs
+# your Apple ID. A free account is enough; no paid membership is required.
 #
-# Usage:  bash Tools/setup-mac-toolchain.sh
+# Safe to run repeatedly -- it skips whatever is already done.
+#
+# Usage:  bash TheChamber/Tools/setup-mac-toolchain.sh
 #
 set -euo pipefail
 
-# Epic documents Xcode 26.4 as incompatible with Unreal Engine, so this is pinned
-# deliberately. Do not "upgrade" it without checking Epic's macOS requirements page.
+# Epic documents Xcode 26.4 as incompatible with Unreal Engine, and 26.5 is
+# reported to crash UE 5.8. Do not raise this without checking Epic's macOS
+# requirements page first.
 readonly TARGET_XCODE="26.1.1"
 readonly MIN_FREE_GB=45
 
@@ -20,169 +22,179 @@ ok()   { printf '  \033[32m[ok]\033[0m   %s\n' "$1"; }
 warn() { printf '  \033[33m[warn]\033[0m %s\n' "$1"; }
 fail() { printf '  \033[31m[fail]\033[0m %s\n' "$1"; }
 
+# Xcodes.app installs side-by-side versions as /Applications/Xcode-26.1.1.app,
+# so check every Xcode bundle rather than assuming the default path.
+xcode_version_at() {
+	plutil -extract CFBundleShortVersionString raw "$1/Contents/Info.plist" 2>/dev/null || true
+}
+
+find_xcode() {
+	local want="$1" app
+	for app in /Applications/Xcode*.app; do
+		[[ -d "$app" ]] || continue
+		[[ "$(xcode_version_at "$app")" == "$want" ]] && { echo "$app"; return 0; }
+	done
+	return 1
+}
+
+list_xcodes() {
+	local app found=1
+	for app in /Applications/Xcode*.app; do
+		[[ -d "$app" ]] || continue
+		echo "         $(xcode_version_at "$app")  ->  $app"
+		found=0
+	done
+	[[ $found -eq 0 ]] || echo "         (none)"
+}
+
 bold "The Chamber -- macOS toolchain setup"
 echo
 
-# --- 1. Platform guard ------------------------------------------------------
+# --- 1. Platform ------------------------------------------------------------
 if [[ "$(uname -s)" != "Darwin" ]]; then
 	fail "This script only runs on macOS. You are on $(uname -s)."
 	exit 1
 fi
 
-# --- 2. macOS version -------------------------------------------------------
-bold "1/7  Checking macOS"
+bold "1/6  Checking macOS"
 MACOS_VERSION="$(sw_vers -productVersion)"
 MACOS_MAJOR="${MACOS_VERSION%%.*}"
 echo "       macOS $MACOS_VERSION"
-
 case "$MACOS_MAJOR" in
 	15) ok "Sequoia -- the combination Epic recommends for UE 5.8." ;;
 	14) warn "Sonoma works, but Shader Model 6 needs macOS 15 or newer." ;;
-	13) warn "The minimum supported version. Consider upgrading." ;;
-	26)
-		warn "Not a combination Epic tests against, but workable."
-		warn "Two things matter on macOS 26: pin Xcode to $TARGET_XCODE (26.4 and 26.5"
-		warn "are both known bad), and install the Metal Toolchain -- step 6 does that."
-		;;
-	27)
-		fail "UE 5.8.1/5.8.2 is reported to fail on macOS 27 at 'Touch UBT generated"
-		fail "tiles' with Bad File Descriptor. Check for a newer hotfix before continuing."
-		;;
+	13) warn "The minimum supported version." ;;
+	26) warn "Workable, but pin Xcode to $TARGET_XCODE and install the Metal Toolchain." ;;
+	27) fail "UE 5.8.x is reported to fail its build on macOS 27."; exit 1 ;;
 	*)
-		if [[ "$MACOS_MAJOR" -lt 13 ]]; then
-			fail "UE 5.8 needs macOS 13 or newer. Upgrade macOS before continuing."
-			exit 1
-		fi
+		[[ "$MACOS_MAJOR" -lt 13 ]] && { fail "UE 5.8 needs macOS 13 or newer."; exit 1; }
 		warn "Untested macOS version for this project."
 		;;
 esac
 echo
 
-# --- 3. Disk space ----------------------------------------------------------
-bold "2/7  Checking disk space"
+# --- 2. Disk ----------------------------------------------------------------
+bold "2/6  Checking disk space"
 FREE_GB="$(df -g / | awk 'NR==2 {print $4}')"
 echo "       ${FREE_GB}GB free"
-if [[ "$FREE_GB" -lt "$MIN_FREE_GB" ]]; then
-	fail "Need at least ${MIN_FREE_GB}GB free for Xcode plus its components."
-	exit 1
-fi
+[[ "$FREE_GB" -lt "$MIN_FREE_GB" ]] && { fail "Need at least ${MIN_FREE_GB}GB free."; exit 1; }
 ok "Enough room."
 echo
 
-# --- 4. Homebrew ------------------------------------------------------------
-bold "3/7  Checking Homebrew"
-# A fresh Homebrew install does not put brew on PATH until a new shell starts,
-# which strands people who install it and immediately re-run this script.
-# Look in the standard install locations before giving up.
-if ! command -v brew >/dev/null 2>&1; then
-	for BREW_PATH in /opt/homebrew/bin/brew /usr/local/bin/brew; do
-		if [[ -x "$BREW_PATH" ]]; then
-			eval "$("$BREW_PATH" shellenv)"
-			warn "Homebrew found at $BREW_PATH but was not on PATH; loaded for this run."
-			# Make it stick for future terminals.
-			SHELL_PROFILE="$HOME/.zprofile"
-			if ! grep -q "brew shellenv" "$SHELL_PROFILE" 2>/dev/null; then
-				echo "eval \"\$($BREW_PATH shellenv)\"" >> "$SHELL_PROFILE"
-				ok "Added Homebrew to $SHELL_PROFILE for future sessions."
+# --- 3. Is Xcode already here? ----------------------------------------------
+bold "3/6  Looking for Xcode $TARGET_XCODE"
+if XCODE_APP="$(find_xcode "$TARGET_XCODE")"; then
+	ok "Found at $XCODE_APP"
+	NEEDS_INSTALL=0
+else
+	warn "Not installed yet. Currently on this Mac:"
+	list_xcodes
+	NEEDS_INSTALL=1
+fi
+echo
+
+# --- 4. Install Xcode -------------------------------------------------------
+if [[ "$NEEDS_INSTALL" -eq 1 ]]; then
+	bold "4/6  Installing Xcode $TARGET_XCODE"
+
+	if ! command -v brew >/dev/null 2>&1; then
+		# A fresh Homebrew install is not on PATH until a new shell starts.
+		for BREW_PATH in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+			if [[ -x "$BREW_PATH" ]]; then
+				eval "$("$BREW_PATH" shellenv)"
+				SHELL_PROFILE="$HOME/.zprofile"
+				grep -q "brew shellenv" "$SHELL_PROFILE" 2>/dev/null \
+					|| echo "eval \"\$($BREW_PATH shellenv)\"" >> "$SHELL_PROFILE"
+				break
 			fi
-			break
-		fi
-	done
+		done
+	fi
+
+	if ! command -v brew >/dev/null 2>&1; then
+		fail "Homebrew is required. Install it, then re-run this script:"
+		echo
+		echo '       /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+		echo
+		exit 1
+	fi
+
+	# The xcodes COMMAND-LINE tool builds from source and that build needs a full
+	# Xcode to already be present -- the exact thing we are trying to install
+	# (XcodesOrg/xcodes#176, XcodesOrg/homebrew-made#4). So install the prebuilt
+	# GUI app instead: no compiler needed, same downloader underneath.
+	if [[ ! -d "/Applications/Xcodes.app" ]]; then
+		echo "       Installing Xcodes.app (prebuilt -- nothing is compiled)..."
+		brew install --cask xcodes-app || brew install --cask xcodes
+	fi
+	ok "Xcodes.app ready."
+	echo
+	open -a Xcodes || true
+
+	bold "   >>> Over to you, in the Xcodes window that just opened <<<"
+	echo
+	echo "       1. Sign in with your Apple ID (free account is fine)."
+	echo "       2. Optional but worth it: Preferences -> Advanced -> enable"
+	echo "          'Experimental unxip'. Cuts install time substantially."
+	echo "       3. Find $TARGET_XCODE in the list and click the download arrow."
+	echo "          Do NOT pick 26.4 or 26.5 -- both are broken with Unreal."
+	echo "       4. It is a ~15GB download. Leave it running."
+	echo
+	echo "       When it finishes, run this script again and it will pick up"
+	echo "       from here:"
+	echo
+	echo "         bash TheChamber/Tools/setup-mac-toolchain.sh"
+	echo
+	exit 0
 fi
 
-if ! command -v brew >/dev/null 2>&1; then
-	fail "Homebrew is not installed. Install it with this command:"
-	echo
-	echo '       /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
-	echo
-	echo "       It will ask for your Mac password. Then re-run this script."
-	exit 1
-fi
-ok "Homebrew present."
+bold "4/6  Xcode $TARGET_XCODE already installed"
+ok "Skipping download."
 echo
 
-# --- 5. xcodes --------------------------------------------------------------
-bold "4/7  Installing the xcodes CLI"
-if command -v xcodes >/dev/null 2>&1; then
-	ok "xcodes already installed."
-else
-	brew install xcodesorg/made/xcodes
-	ok "xcodes installed."
-fi
-
-# aria2 makes the 15GB download several times faster. Nice to have, not required.
-if ! command -v aria2c >/dev/null 2>&1; then
-	echo "       Installing aria2 (downloads Xcode several times faster)..."
-	brew install aria2 || warn "aria2 failed to install; falling back to the slower download."
-fi
-echo
-
-# --- 6. Xcode ---------------------------------------------------------------
-bold "5/7  Installing Xcode $TARGET_XCODE"
-if xcodes installed 2>/dev/null | grep -q "$TARGET_XCODE"; then
-	ok "Xcode $TARGET_XCODE is already installed."
-else
-	echo "       Apple requires a sign-in for this download."
-	echo "       You will be prompted for your Apple ID -- a free account is enough."
-	echo "       This is a ~15GB download and will take a while."
-	echo
-	xcodes install "$TARGET_XCODE"
-	ok "Xcode $TARGET_XCODE installed."
-fi
-echo
-
-# --- 7. Metal Toolchain -----------------------------------------------------
-# Since Xcode 16, Apple ships the Metal Toolchain as a separate on-demand download
-# rather than inside Xcode.app. Unreal compiles Metal shaders during the build, so
-# without this component the build dies with a Metal compiler error that looks like
-# an engine bug. This single step is behind most "UE will not build on macOS 26"
+# --- 5. Metal Toolchain -----------------------------------------------------
+# Since Xcode 16, Apple ships the Metal Toolchain as a separate on-demand
+# download rather than inside Xcode.app. Unreal compiles Metal shaders during
+# the build, so without this the build dies with a Metal compiler error that
+# reads like an engine bug. This is behind most "UE will not build on macOS 26"
 # reports.
-bold "6/7  Downloading the Metal Toolchain"
+bold "5/6  Selecting the toolchain and fetching Metal"
+echo "       These steps need administrator rights."
+sudo xcode-select -s "$XCODE_APP/Contents/Developer"
+sudo xcodebuild -license accept
+sudo xcodebuild -runFirstLaunch || warn "runFirstLaunch reported an error; continuing."
+
 if xcodebuild -downloadComponent MetalToolchain 2>/dev/null; then
 	ok "Metal Toolchain present."
 else
-	warn "Could not fetch it as the current user; retrying with sudo."
 	sudo xcodebuild -downloadComponent MetalToolchain \
-		|| warn "Failed. If the build later reports a Metal compiler error, run this by hand."
+		|| warn "Could not fetch it. If the build reports a Metal error, run this by hand."
 fi
 echo
 
-# --- 8. Select and verify ---------------------------------------------------
-bold "7/7  Selecting the toolchain"
-echo "       These steps need administrator rights."
-sudo xcodes select "$TARGET_XCODE"
-sudo xcodebuild -license accept
-xcodebuild -runFirstLaunch
-echo
-
-ACTIVE_RAW="$(xcodebuild -version | head -1)"
-case "$ACTIVE_RAW" in
-	*26.4*|*26.5*)
-		fail "Xcode ${ACTIVE_RAW#Xcode } is known bad with Unreal Engine."
-		fail "Epic documents 26.4 as incompatible, and 26.5 is reported to crash UE 5.8."
-		fail "Select $TARGET_XCODE instead:  sudo xcodes select $TARGET_XCODE"
-		exit 1
-		;;
-esac
-
-bold "Verification"
+# --- 6. Verify --------------------------------------------------------------
+bold "6/6  Verification"
 ACTIVE_PATH="$(xcode-select -p)"
 ACTIVE_VERSION="$(xcodebuild -version | head -1)"
 echo "       Active path:    $ACTIVE_PATH"
 echo "       Active version: $ACTIVE_VERSION"
 echo
 
+case "$ACTIVE_VERSION" in
+	*26.4*|*26.5*)
+		fail "Xcode ${ACTIVE_VERSION#Xcode } is known bad with Unreal Engine."
+		exit 1
+		;;
+esac
+
 if [[ "$ACTIVE_VERSION" == *"$TARGET_XCODE"* ]]; then
 	ok "Toolchain ready."
 	echo
 	bold "Next: right-click TheChamber.uproject -> Services -> Generate Xcode project files"
 elif [[ "$ACTIVE_PATH" == *"CommandLineTools"* ]]; then
-	fail "xcode-select still points at Command Line Tools instead of full Xcode."
-	echo "       Fix with:  sudo xcode-select -s /Applications/Xcode.app/Contents/Developer"
+	fail "xcode-select still points at Command Line Tools, not full Xcode."
+	echo "       Fix:  sudo xcode-select -s $XCODE_APP/Contents/Developer"
 	exit 1
 else
 	warn "Active version is not $TARGET_XCODE. Unreal may refuse to build."
-	echo "       Installed versions:"
-	xcodes installed || true
 	exit 1
 fi
