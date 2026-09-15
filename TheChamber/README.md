@@ -41,10 +41,32 @@
    xcodebuild -version      # אימות: צריך להראות 26.1.1
    ```
 
-**גרסת macOS:** המינימום לעורך הוא 13.x. עבור Shader Model 6 נדרש 15.x ומעלה.
-השילוב שאפיק ממליצה עליו ל-5.8 הוא **macOS 15 (Sequoia) + Xcode 26.1.1**.
-יש דיווחים בפורומים על כשלי קומפילציה בשילוב macOS 26 עם Xcode 26.x.
-בדוק מה יש לך עם `sw_vers`.
+5. **הורד את ה-Metal Toolchain** — שלב שרוב האנשים מפספסים:
+   ```bash
+   xcodebuild -downloadComponent MetalToolchain
+   ```
+   מאז Xcode 16 אפל הוציאה את ה-Metal Toolchain מתוך `Xcode.app` והפכה אותו
+   להורדה נפרדת לפי דרישה. אנריל מקמפל שיידרים של Metal כחלק מהבנייה, ולכן
+   בלי הרכיב הזה הבנייה נופלת עם שגיאת קומפיילר Metal שנראית כמו באג במנוע.
+   **זה מאחורי רוב הדיווחים על "אנריל לא נבנה על macOS 26".**
+
+**קיצור דרך:** הסקריפט `Tools/setup-mac-toolchain.sh` מבצע את כל השלבים האלה,
+כולל בדיקות שפיות וחסימה של גרסאות Xcode שבורות.
+
+### טבלת גרסאות
+
+| גרסת Xcode | מצב |
+|---|---|
+| **26.1.1** | ✅ ההמלצה של Epic ל-5.8 |
+| 26.4 | ❌ Epic מתעדת אותה כלא תואמת |
+| 26.5 | ❌ דיווחים על קריסות עם 5.8 |
+
+| גרסת macOS | מצב |
+|---|---|
+| 15 (Sequoia) | ✅ השילוב שאפיק ממליצה עליו |
+| 13–14 | ✅ עובד (13 הוא המינימום; SM6 דורש 15+) |
+| 26 (Tahoe) | ⚠️ עובד, אבל חובה Xcode 26.1.1 + Metal Toolchain |
+| 27 | ❌ דיווח על כשל בנייה ב-5.8.1/5.8.2 |
 
 **מגבלות שחשוב להכיר לפני שמתחייבים למאק:**
 
@@ -140,6 +162,7 @@
 | שגיאות toolchain מיד בתחילת הבנייה (Windows) | MSVC ישן מדי ל-5.8. עדכן את כלי הבנייה של Visual Studio. |
 | שגיאות `Platform Mac` בתחילת הבנייה (macOS) | אי-התאמה בין גרסת Xcode לגרסת המנוע. אמת עם `xcodebuild -version`. |
 | `xcrun: error: unable to find utility` (macOS) | `xcode-select` מצביע על Command Line Tools במקום על Xcode המלא. הרץ את הפקודה `xcode-select -s` מסעיף 1. |
+| שגיאת קומפיילר **Metal** (macOS) | ה-Metal Toolchain לא הורד. `xcodebuild -downloadComponent MetalToolchain` |
 | `Plugin 'SkeletalMerging' not found` | התוסף נקרא אחרת בגרסה שלך — הסר את הבלוק `Plugins` מה-`.uproject` והשאר רק את התלות ב-`Build.cs`. |
 | `Cannot open include file: 'SkeletalMergingLibrary.h'` | המודול `SkeletalMerging` לא נטען. ודא שהוא מופיע ב-`TheChamber.Build.cs`. |
 | שגיאות UHT על `TObjectPtr` / `const` | חתימה שהשתנתה ב-5.8. שלח לי את השגיאה. |
