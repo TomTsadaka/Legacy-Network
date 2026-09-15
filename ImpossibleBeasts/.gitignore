@@ -1,0 +1,20 @@
+# Unreal Engine generated directories
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# Visual Studio / Rider / Xcode
+.vs/
+.idea/
+*.sln
+*.suo
+*.xcodeproj/
+*.xcworkspace/
+*.VC.db
+*.opensdf
+*.sdf
+
+# macOS
+.DS_Store
