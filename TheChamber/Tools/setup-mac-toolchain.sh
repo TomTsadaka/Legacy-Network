@@ -71,11 +71,31 @@ echo
 
 # --- 4. Homebrew ------------------------------------------------------------
 bold "3/7  Checking Homebrew"
+# A fresh Homebrew install does not put brew on PATH until a new shell starts,
+# which strands people who install it and immediately re-run this script.
+# Look in the standard install locations before giving up.
 if ! command -v brew >/dev/null 2>&1; then
-	fail "Homebrew is not installed. Install it first, then re-run this script:"
+	for BREW_PATH in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+		if [[ -x "$BREW_PATH" ]]; then
+			eval "$("$BREW_PATH" shellenv)"
+			warn "Homebrew found at $BREW_PATH but was not on PATH; loaded for this run."
+			# Make it stick for future terminals.
+			SHELL_PROFILE="$HOME/.zprofile"
+			if ! grep -q "brew shellenv" "$SHELL_PROFILE" 2>/dev/null; then
+				echo "eval \"\$($BREW_PATH shellenv)\"" >> "$SHELL_PROFILE"
+				ok "Added Homebrew to $SHELL_PROFILE for future sessions."
+			fi
+			break
+		fi
+	done
+fi
+
+if ! command -v brew >/dev/null 2>&1; then
+	fail "Homebrew is not installed. Install it with this command:"
 	echo
 	echo '       /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
 	echo
+	echo "       It will ask for your Mac password. Then re-run this script."
 	exit 1
 fi
 ok "Homebrew present."
