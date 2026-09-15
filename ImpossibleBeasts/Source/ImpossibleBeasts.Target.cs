@@ -7,10 +7,10 @@ public class ImpossibleBeastsTarget : TargetRules
 	{
 		Type = TargetType.Game;
 
-		// V4 / Unreal5_3 are retained in every later 5.x release, so this project
-		// keeps compiling if the engine is upgraded. Bump both once you settle on a version.
-		DefaultBuildSettings = BuildSettingsVersion.V4;
-		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_3;
+		// Pinned to UE 5.8. Both values are explicit rather than Latest, so an engine
+		// upgrade cannot silently change build behaviour underneath the project.
+		DefaultBuildSettings = BuildSettingsVersion.V7;
+		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_8;
 
 		ExtraModuleNames.Add("ImpossibleBeasts");
 	}

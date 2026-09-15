@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "5.4",
+	"EngineAssociation": "5.8",
 	"Category": "Game",
 	"Description": "RTS prototype: two animal halves fuse into a single hybrid creature at runtime.",
 	"Modules": [
@@ -15,5 +15,10 @@
 			]
 		}
 	],
-	"Plugins": []
+	"Plugins": [
+		{
+			"Name": "SkeletalMerging",
+			"Enabled": true
+		}
+	]
 }
