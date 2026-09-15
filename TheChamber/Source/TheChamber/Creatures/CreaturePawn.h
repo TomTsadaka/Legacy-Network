@@ -18,7 +18,7 @@ class USkeleton;
  * to a lighter custom movement component. Do not pay that cost before you measure it.
  */
 UCLASS()
-class IMPOSSIBLEBEASTS_API ACreaturePawn : public ACharacter
+class THECHAMBER_API ACreaturePawn : public ACharacter
 {
 	GENERATED_BODY()
 

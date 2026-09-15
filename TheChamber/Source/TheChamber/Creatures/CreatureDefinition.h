@@ -17,7 +17,7 @@ class UAnimalDataAsset;
  * creature as two asset ids instead of a serialised blob.
  */
 UCLASS(BlueprintType)
-class IMPOSSIBLEBEASTS_API UCreatureDefinition : public UObject
+class THECHAMBER_API UCreatureDefinition : public UObject
 {
 	GENERATED_BODY()
 

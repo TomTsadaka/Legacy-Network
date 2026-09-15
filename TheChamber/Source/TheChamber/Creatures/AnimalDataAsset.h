@@ -25,7 +25,7 @@ class USkeletalMesh;
  * what keeps it that way.
  */
 UCLASS(BlueprintType)
-class IMPOSSIBLEBEASTS_API UAnimalDataAsset : public UPrimaryDataAsset
+class THECHAMBER_API UAnimalDataAsset : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 

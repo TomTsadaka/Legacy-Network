@@ -5,7 +5,7 @@
 	"Description": "RTS prototype: two animal halves fuse into a single hybrid creature at runtime.",
 	"Modules": [
 		{
-			"Name": "ImpossibleBeasts",
+			"Name": "TheChamber",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [

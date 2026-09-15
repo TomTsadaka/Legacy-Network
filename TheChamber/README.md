@@ -1,4 +1,4 @@
-# Impossible Beasts
+# The Chamber
 
 אב-טיפוס ל-RTS שבו שתי חיות מתמזגות ליצור היברידי אחד בזמן ריצה — ברוח Impossible Creatures (2003).
 
@@ -18,7 +18,7 @@
 3. בלאנצ'ר: לשונית **Unreal Engine** → **Library** → `+` → בחר גרסת 5.x.
 4. התקן **Visual Studio 2022 Community** עם ה-workload **"Game development with C++"**.
    בלי זה הפרויקט לא יתקמפל.
-5. **UE 5.8 דורש MSVC חדש יותר מ-5.7.** אם הבנייה נכשלת מיד עם שגיאות toolchain —
+5. *(Windows בלבד)* **UE 5.8 דורש MSVC חדש יותר מ-5.7.** אם הבנייה נכשלת מיד עם שגיאות toolchain —
    עדכן את כלי הבנייה של Visual Studio לפני שאתה מחפש באג בקוד. זו התקלה הנפוצה ביותר
    במעבר ל-5.8.
 
@@ -27,11 +27,24 @@
 המנוע עובד על מאק, כולל Apple Silicon (M1 ומעלה) באופן נייטיבי.
 
 1. אותם שלבים 1–3 כמו ב-Windows.
-2. במקום Visual Studio — **Xcode** מה-App Store (חינם), ואחריו:
+2. **אל תוריד את Xcode מה-App Store.** ה-App Store נותן תמיד את הגרסה העדכנית
+   ביותר, ולפי התיעוד של Epic **Xcode 26.4 אינו תואם ל-Unreal Engine**.
+   הורד גרסה ספציפית מ-[Apple Developer Downloads](https://developer.apple.com/download/all/)
+   (נדרש Apple ID חינמי) — חפש **Xcode 26.1.1**, הגרסה ש-Epic ממליצה עליה ל-5.8.
+3. צריך את **Xcode המלא**, לא רק Command Line Tools. אנריל משתמש בו גם לייצור
+   פרויקט ה-Xcode וגם לקומפילציה.
+4. אחרי ההתקנה, הרץ בטרמינל:
+   ```bash
+   sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+   sudo xcodebuild -license accept
+   xcodebuild -runFirstLaunch
+   xcodebuild -version      # אימות: צריך להראות 26.1.1
    ```
-   sudo xcode-select --install
-   ```
-3. הרץ פעם אחת את Xcode ואשר את הרישיון לפני שתפתח את הפרויקט.
+
+**גרסת macOS:** המינימום לעורך הוא 13.x. עבור Shader Model 6 נדרש 15.x ומעלה.
+השילוב שאפיק ממליצה עליו ל-5.8 הוא **macOS 15 (Sequoia) + Xcode 26.1.1**.
+יש דיווחים בפורומים על כשלי קומפילציה בשילוב macOS 26 עם Xcode 26.x.
+בדוק מה יש לך עם `sw_vers`.
 
 **מגבלות שחשוב להכיר לפני שמתחייבים למאק:**
 
@@ -124,9 +137,11 @@
 
 | תסמין | סיבה וטיפול |
 |---|---|
-| שגיאות toolchain מיד בתחילת הבנייה | MSVC ישן מדי ל-5.8. עדכן את כלי הבנייה של Visual Studio. |
+| שגיאות toolchain מיד בתחילת הבנייה (Windows) | MSVC ישן מדי ל-5.8. עדכן את כלי הבנייה של Visual Studio. |
+| שגיאות `Platform Mac` בתחילת הבנייה (macOS) | אי-התאמה בין גרסת Xcode לגרסת המנוע. אמת עם `xcodebuild -version`. |
+| `xcrun: error: unable to find utility` (macOS) | `xcode-select` מצביע על Command Line Tools במקום על Xcode המלא. הרץ את הפקודה `xcode-select -s` מסעיף 1. |
 | `Plugin 'SkeletalMerging' not found` | התוסף נקרא אחרת בגרסה שלך — הסר את הבלוק `Plugins` מה-`.uproject` והשאר רק את התלות ב-`Build.cs`. |
-| `Cannot open include file: 'SkeletalMergingLibrary.h'` | המודול `SkeletalMerging` לא נטען. ודא שהוא מופיע ב-`ImpossibleBeasts.Build.cs`. |
+| `Cannot open include file: 'SkeletalMergingLibrary.h'` | המודול `SkeletalMerging` לא נטען. ודא שהוא מופיע ב-`TheChamber.Build.cs`. |
 | שגיאות UHT על `TObjectPtr` / `const` | חתימה שהשתנתה ב-5.8. שלח לי את השגיאה. |
 
 ## 6. הערה משפטית

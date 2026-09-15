@@ -1,9 +1,9 @@
 using UnrealBuildTool;
 using System.Collections.Generic;
 
-public class ImpossibleBeastsTarget : TargetRules
+public class TheChamberTarget : TargetRules
 {
-	public ImpossibleBeastsTarget(TargetInfo Target) : base(Target)
+	public TheChamberTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
 
@@ -12,6 +12,6 @@ public class ImpossibleBeastsTarget : TargetRules
 		DefaultBuildSettings = BuildSettingsVersion.V7;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_8;
 
-		ExtraModuleNames.Add("ImpossibleBeasts");
+		ExtraModuleNames.Add("TheChamber");
 	}
 }

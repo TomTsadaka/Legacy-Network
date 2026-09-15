@@ -18,7 +18,7 @@ class USkeleton;
  * live creatures.
  */
 UCLASS()
-class IMPOSSIBLEBEASTS_API UCreatureMeshCache : public UGameInstanceSubsystem
+class THECHAMBER_API UCreatureMeshCache : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 

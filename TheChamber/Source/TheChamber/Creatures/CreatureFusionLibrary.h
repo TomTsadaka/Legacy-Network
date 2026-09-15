@@ -18,7 +18,7 @@ class USkeleton;
  * safe to store as two asset ids, to replicate as two asset ids, and to compare in tests.
  */
 UCLASS()
-class IMPOSSIBLEBEASTS_API UCreatureFusionLibrary : public UBlueprintFunctionLibrary
+class THECHAMBER_API UCreatureFusionLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 

@@ -1,8 +1,8 @@
 using UnrealBuildTool;
 
-public class ImpossibleBeasts : ModuleRules
+public class TheChamber : ModuleRules
 {
-	public ImpossibleBeasts(ReadOnlyTargetRules Target) : base(Target)
+	public TheChamber(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 

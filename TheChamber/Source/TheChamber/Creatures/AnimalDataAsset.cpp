@@ -37,13 +37,13 @@ EDataValidationResult UAnimalDataAsset::IsDataValid(FDataValidationContext& Cont
 
 	if (AnimalId.IsNone())
 	{
-		Context.AddError(NSLOCTEXT("ImpossibleBeasts", "NoAnimalId", "AnimalId is required and must be unique."));
+		Context.AddError(NSLOCTEXT("TheChamber", "NoAnimalId", "AnimalId is required and must be unique."));
 		Result = EDataValidationResult::Invalid;
 	}
 
 	if (FrontHalfMesh.IsNull() && BackHalfMesh.IsNull())
 	{
-		Context.AddError(NSLOCTEXT("ImpossibleBeasts", "NoHalfMesh", "An animal needs at least one half mesh to be usable in fusion."));
+		Context.AddError(NSLOCTEXT("TheChamber", "NoHalfMesh", "An animal needs at least one half mesh to be usable in fusion."));
 		Result = EDataValidationResult::Invalid;
 	}
 

@@ -15,7 +15,7 @@
  * class and wire those nodes up once; every animal then reshapes the same rig for free.
  */
 UCLASS()
-class IMPOSSIBLEBEASTS_API UCreatureAnimInstance : public UAnimInstance
+class THECHAMBER_API UCreatureAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 

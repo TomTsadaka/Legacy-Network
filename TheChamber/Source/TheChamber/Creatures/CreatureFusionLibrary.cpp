@@ -132,7 +132,7 @@ UCreatureDefinition* UCreatureFusionLibrary::FuseAnimals(
 	Def->Abilities.AppendTags(BackAnimal->GetHalfAbilities(ECreatureHalf::Back));
 
 	Def->DisplayName = FText::Format(
-		NSLOCTEXT("ImpossibleBeasts", "HybridName", "{0}-{1}"),
+		NSLOCTEXT("TheChamber", "HybridName", "{0}-{1}"),
 		FrontAnimal->DisplayName,
 		BackAnimal->DisplayName);
 

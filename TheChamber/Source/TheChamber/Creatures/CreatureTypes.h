@@ -18,7 +18,7 @@ enum class ECreatureHalf : uint8
  * baseline. Fusion blends two of them into the profile the spawned creature actually uses.
  */
 USTRUCT(BlueprintType)
-struct IMPOSSIBLEBEASTS_API FCreatureStats
+struct THECHAMBER_API FCreatureStats
 {
 	GENERATED_BODY()
 
@@ -65,7 +65,7 @@ struct IMPOSSIBLEBEASTS_API FCreatureStats
  * not as plumbing.
  */
 USTRUCT(BlueprintType)
-struct IMPOSSIBLEBEASTS_API FCreatureFusionWeights
+struct THECHAMBER_API FCreatureFusionWeights
 {
 	GENERATED_BODY()
 
