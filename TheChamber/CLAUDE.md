@@ -13,6 +13,26 @@ This directory is a **self-contained Unreal project inside an unrelated
 repository**. The repo root is a Next.js social network app. Do not mix them.
 Long term this project belongs in its own repo; the folder is movable as-is.
 
+## Where things stand right now
+
+Branch `claude/unreal-engine-3d-games-zot7qj`, open as **PR #2**. Everything is
+committed and pushed; nothing is in flight.
+
+**The immediate next task, in order:**
+
+1. Run `bash Tools/setup-mac-toolchain.sh`. It is resumable. If Xcode 26.1.1 is
+   not installed yet it opens Xcodes.app and stops — the user picks the version
+   and signs in with their Apple ID, then runs the script again to finish.
+2. Generate the Xcode project files from `TheChamber.uproject`.
+3. Compile, and fix what comes back. This has never been done. See
+   `README.md` for a table of the likely first-compile failures.
+4. Then the editor work under "Still needed in the editor" below.
+
+**Ignore the red Vercel check on PR #2.** It is a deployment failure in the
+Next.js app at the repo root, not from this project — the whole diff is inside
+`TheChamber/` and touches no Next.js build input. Already explained in a PR
+comment; do not try to fix it as part of this work.
+
 ## Current state
 
 Stages 1 and 2 of the roadmap are written: project skeleton and the creature
