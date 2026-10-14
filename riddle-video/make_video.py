@@ -60,7 +60,8 @@ def pill(d, xy, s, size, fg, bg, alpha=1.0):
     text(d, xy, s, size, fg, alpha)
 
 # ---- Shape (units, y up). Width 18, height 12, notch 7 wide x 4 deep. Perimeter = 60.
-S, OX, OY = 45, 135, 1240
+# Layout keeps everything inside Instagram Reels safe zone (~y 220-1560, clear of right-side buttons).
+S, OX, OY = 42, 162, 1105
 def P(x, y): return (OX + x * S, OY - y * S)
 PTS = [(0, 0), (0, 12), (7, 12), (7, 8), (18, 8), (18, 0), (0, 0)]
 
@@ -80,7 +81,7 @@ def draw_path(d, pts, p, color, width=12):
 LABELS = [  # (unit position, text)
     ((1.9, 6), "12"), ((3.5, 13.1), "7"), ((8.3, 10), "4"), ((9, -1.3), "18"),
 ]
-QMARKS = [((12.5, 9.2), "?"), ((19.3, 4), "?")]
+QMARKS = [((12.5, 9.2), "?"), ((16.9, 4), "?")]
 
 def draw_labels(d, t, start, step=0.35):
     for i, (pos, s) in enumerate(LABELS):
@@ -95,9 +96,9 @@ def draw_qmarks(d, t, start):
 
 def header(d, t, start=0.0):
     sc = pop(prog(t, start, 0.6))
-    pill(d, (W / 2, 200), "חידת היום", 70 * sc, BG, YELLOW, clamp(sc))
+    pill(d, (W / 2, 245), "חידת היום", 70 * sc, BG, YELLOW, clamp(sc))
     a = ease_out(prog(t, start + 0.5, 0.5))
-    text(d, (W / 2, 330), "בלי עט. בלי דף.", 64, WHITE, a)
+    text(d, (W / 2, 345), "בלי עט. בלי דף.", 64, WHITE, a)
 
 # ---------------- Challenge video ----------------
 CH_DUR = 23.0
@@ -110,12 +111,12 @@ def challenge_frame(t):
     draw_labels(d, t, 4.2)
     draw_qmarks(d, t, 5.9)
     q = pop(prog(t, 7.0, 0.6))
-    text(d, (W / 2, 520), "מה ההיקף של הצורה?", 76 * q, CYAN, clamp(q))
+    text(d, (W / 2, 445), "מה ההיקף של הצורה?", 76 * q, CYAN, clamp(q))
     a = ease_out(prog(t, 8.2, 0.5))
-    text(d, (W / 2, 1430), "עצרו את הסרטון וחשבו!", 50, WHITE, a, bold=False)
+    text(d, (W / 2, 1275), "עצרו את הסרטון וחשבו!", 50, WHITE, a, bold=False)
     # countdown ring
     if CD_START <= t < CD_START + CD_LEN + 0.6:
-        cx, cy, r = W / 2, 1640, 120
+        cx, cy, r = W / 2, 1435, 100
         el = t - CD_START
         n = max(0, CD_LEN - int(el))
         frac = clamp(1 - el / CD_LEN)
@@ -128,9 +129,9 @@ def challenge_frame(t):
         text(d, (cx, cy), str(n), 120 * (0.85 + 0.15 * tick), col, ap)
     if t >= CD_START + CD_LEN:
         p = pop(prog(t, CD_START + CD_LEN + 0.3, 0.6))
-        pill(d, (W / 2, 1620), "כתבו את התשובה בתגובות!", 62 * p, BG, GREEN, clamp(p))
+        pill(d, (W / 2, 1410), "כתבו את התשובה בתגובות!", 62 * p, BG, GREEN, clamp(p))
         a = ease_out(prog(t, CD_START + CD_LEN + 1.0, 0.5))
-        text(d, (W / 2, 1760), "הפתרון בסרטון הבא", 50, WHITE, a, bold=False)
+        text(d, (W / 2, 1525), "הפתרון בסרטון הבא", 50, WHITE, a, bold=False)
     return img
 
 def challenge_audio():
@@ -144,9 +145,9 @@ SO_DUR = 17.0
 
 def solution_frame(t):
     img = BG_IMG.copy(); d = ImageDraw.Draw(img)
-    pill(d, (W / 2, 200), "הפתרון", 70, BG, GREEN)
+    pill(d, (W / 2, 245), "הפתרון", 70, BG, GREEN)
     a1 = ease_out(prog(t, 0.3, 0.5))
-    text(d, (W / 2, 330), "נזיז את הצלעות החסרות...", 58, WHITE, a1)
+    text(d, (W / 2, 345), "נזיז את הצלעות החסרות...", 58, WHITE, a1)
     m = ease_inout(prog(t, 2.5, 1.5))    # lift the 11 m horizontal edge up by 4
     m2 = ease_inout(prog(t, 4.5, 1.5))   # slide the 4 m vertical edge right by 11
     pts_fixed = [(7, 12), (0, 12), (0, 0), (18, 0), (18, 8)]
@@ -163,16 +164,16 @@ def solution_frame(t):
             for i in range(0, n, 2):
                 d.line([(lerp(A[0], B[0], i / n), lerp(A[1], B[1], i / n)), (lerp(A[0], B[0], (i + 1) / n), lerp(A[1], B[1], (i + 1) / n))], fill=mix(BG, WHITE, 0.25 * min(m, 1)), width=4)
     a2 = ease_out(prog(t, 6.5, 0.5))
-    text(d, (W / 2, 520), "קיבלנו מלבן 18 על 12!", 66, CYAN, a2)
+    text(d, (W / 2, 445), "קיבלנו מלבן 18 על 12!", 66, CYAN, a2)
     for i, (pos, s) in enumerate([((9, 13.1), "18"), ((9, -1.3), "18"), ((1.9, 6), "12"), ((16.1, 6), "12")]):
         sc = pop(prog(t, 7.2 + i * 0.3, 0.45))
         pill(d, P(*pos), s + " מ'", 52 * sc, BG, YELLOW, clamp(sc))
     e = pop(prog(t, 9.0, 0.6))
-    text(d, (W / 2, 1450), "18 + 12 + 18 + 12", 72 * e, WHITE, clamp(e))
+    text(d, (W / 2, 1275), "18 + 12 + 18 + 12", 72 * e, WHITE, clamp(e))
     r = pop(prog(t, 10.3, 0.7))
-    pill(d, (W / 2, 1610), "ההיקף = 60 מטר", 90 * r, BG, GREEN, clamp(r))
+    pill(d, (W / 2, 1410), "ההיקף = 60 מטר", 84 * r, BG, GREEN, clamp(r))
     a3 = ease_out(prog(t, 12.0, 0.5))
-    text(d, (W / 2, 1770), "צדקתם? כתבו בתגובות!", 52, WHITE, a3, bold=False)
+    text(d, (W / 2, 1528), "צדקתם? כתבו בתגובות!", 52, WHITE, a3, bold=False)
     return img
 
 def solution_audio():
